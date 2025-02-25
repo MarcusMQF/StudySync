@@ -1,0 +1,105 @@
+.calendar-root {
+  background: #030712;
+  border-radius: 8px;
+  padding: 1rem;
+  width: 100%;
+  color: #fff;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
+.month-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.nav-button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-button:hover {
+  opacity: 0.8;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: auto repeat(5, 1fr);
+  gap: 2px;
+  font-size: 0.75rem;
+  min-height: 240px; /* Add fixed minimum height */
+}
+
+.calendar-day-header {
+  color: #9CA3AF;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  background: transparent;
+  color: rgba(20, 184, 166, 0.7); /* Lighter teal for normal days */
+  border: none;
+  font-size: 0.875rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  height: 32px;
+  width: 32px;
+  border-radius: 4px;
+  transition: all 0.02s ease;
+}
+
+/* Normal day hover */
+.calendar-day:hover:not(.empty):not(.selected):not(.today) {
+  background: rgba(134, 134, 134, 0.1);
+  color: white;
+}
+
+/* Selected day (not today) */
+.calendar-day.selected:not(.today) {
+  background: rgba(20, 184, 166, 0.15);
+  color: #14b8a6;
+}
+
+/* Today's styling (whether selected or not) */
+.calendar-day.today {
+  background: rgba(6, 182, 212, 0.2);
+  color: #06b6d4;
+}
+
+.calendar-day.empty {
+  display: none;
+}
+
+.calendar-day:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+/* Update the other month days styling */
+.calendar-day.other-month {
+  color: rgba(224, 224, 224, 0.5) !important; /* Grey color for other month days */
+  background: transparent;
+  cursor: default;
+  opacity: 0.5;
+} 

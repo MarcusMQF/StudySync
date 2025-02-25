@@ -1,0 +1,47 @@
+.app {
+  min-height: 100vh;
+  background-color: #030712;
+  color: white;
+  display: flex;
+}
+
+.background-squares {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.main-content {
+  flex-grow: 1;
+  margin-left: 300px;
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  overflow: hidden;
+  padding: 3.5rem 3rem 3rem 3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content.shifted {
+  margin-left: 200px;
+}
+
+.timetable-container {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.timetable-header {
+  margin-bottom: 2rem;
+}
+
+.timetable-layout {
+  flex: 1;
+  margin-bottom: 8.8rem;
+} 
