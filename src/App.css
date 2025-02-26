@@ -21,7 +21,8 @@
   z-index: 1;
   height: 100vh;
   overflow: hidden;
-  padding: 3.5rem 3rem 3rem 3rem;
+  padding: 3.5rem 3rem 3rem 2rem;
+  right: 0.1rem;
   display: flex;
   flex-direction: column;
 }

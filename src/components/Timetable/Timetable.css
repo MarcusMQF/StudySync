@@ -310,13 +310,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  cursor: pointer;
   padding: 0.25rem;
-}
-
-.course-title:hover {
-  background: rgba(20, 184, 166, 0.05);
-  border-radius: 4px;
 }
 
 .course-title-icons {
@@ -328,13 +322,12 @@
 
 .expand-icon {
   color: rgba(255, 255, 255, 0.6);
-  transition: all 0.2s ease;
   font-size: 12px;
 }
 
 .remove-icon {
-  color: rgba(239, 68, 68, 0.4);
-  transition: all 0.2s ease;
+  color: rgba(239, 68, 68, 0.7);
+  transition: opacity 0.2s ease;
   opacity: 0;
   font-size: 12px;
 }
@@ -343,19 +336,27 @@
   opacity: 1;
 }
 
+/* Remove other hover effects */
+.course-title:hover {
+  background: transparent;
+}
+
 .course-title:hover .expand-icon {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .remove-icon:hover {
   color: rgba(239, 68, 68, 0.9);
   transform: scale(1.1);
+  transition: all 0.5s ease;
 }
 
 .expand-icon:hover {
   color: #ffffff;
-  transform: scale(1.1);
+  transform: scale(1.2);
+  transition: all 0.5s ease;
 }
+
 
 .add-occurrence-btn {
   position: absolute;
