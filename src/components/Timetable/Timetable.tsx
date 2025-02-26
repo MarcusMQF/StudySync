@@ -15,14 +15,15 @@ interface Course {
   occurrences: CourseOccurrence[];
 }
 
-interface TimetableOccurrence extends CourseOccurrence {
+interface TimetableOccurrence {
   courseId: string;
   courseName: string;
-  occurrenceIndex: number;
-  gridPosition?: {
-    startColumn: number;
-    width: number;
-  };
+  courseCode: string;
+  occurrenceNumber: number;
+  time: string;
+  venue: string;
+  lecturer: string;
+  day: string;
 }
 
 type TimetableOccurrences = {
@@ -36,6 +37,9 @@ export const Timetable = () => {
   const [expandedCourses, setExpandedCourses] = useState<string[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [timetableOccurrences, setTimetableOccurrences] = useState<TimetableOccurrences>({});
+  const [addedOccurrences, setAddedOccurrences] = useState<{
+    [courseId: string]: number | null;
+  }>({});
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Available courses data
@@ -45,7 +49,7 @@ export const Timetable = () => {
       name: 'Computer System and Organizations',
       occurrences: [
         {
-          time: '9:00 - 10:00',
+          time: '9:00 - 11:00',
           venue: 'Room 1, Computing Building',
           lecturer: 'Dr. Anderson',
           day: 'Monday'
@@ -141,8 +145,27 @@ export const Timetable = () => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const timeSlots = Array.from({ length: 10 }, (_, i) => {
     const hour = i + 8;
-    return `${hour}:00`;
+    return `${hour < 10 ? '0' : ''}${hour}:00`;
   });
+
+  const calculateTimePosition = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    // Precise calculation with 0.5px offset for perfect alignment
+    return Math.round((hours - 8) * 100 + (minutes / 60) * 100);
+  };
+  
+  const calculateBlockHeight = (startTime: string, endTime: string): number => {
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+    
+    const startTotalMinutes = startHours * 60 + startMinutes;
+    const endTotalMinutes = endHours * 60 + endMinutes;
+    
+    // Precise height calculation with slight adjustment for borders
+    const heightInPixels = Math.round((endTotalMinutes - startTotalMinutes) * (100 / 60));
+    
+    return Math.max(heightInPixels, 30);
+  };
 
   // Handle search
   useEffect(() => {
@@ -175,7 +198,6 @@ export const Timetable = () => {
   const handleCourseSelect = (course: Course) => {
     if (!selectedCourses.find(c => c.id === course.id)) {
       setSelectedCourses([...selectedCourses, course]);
-      setExpandedCourses([...expandedCourses, course.id]);
     }
     setSearchQuery('');
     setShowSearchResults(false);
@@ -189,9 +211,39 @@ export const Timetable = () => {
     );
   };
 
-  const handleAddOccurrence = (courseId: string, occurrence: CourseOccurrence) => {
-    // TODO: Add occurrence to timetable grid
-    console.log('Adding occurrence:', courseId, occurrence);
+  const handleAddOccurrence = (courseId: string, occurrence: CourseOccurrence, occurrenceIndex: number, courseName: string) => {
+    const newOccurrence: TimetableOccurrence = {
+      courseId,
+      courseName,
+      courseCode: courseId,
+      occurrenceNumber: occurrenceIndex + 1,
+      time: occurrence.time,
+      venue: occurrence.venue,
+      lecturer: occurrence.lecturer,
+      day: occurrence.day
+    };
+
+    setTimetableOccurrences(prev => ({
+      ...prev,
+      [occurrence.day]: [...(prev[occurrence.day] || []), newOccurrence]
+    }));
+
+    setAddedOccurrences(prev => ({
+      ...prev,
+      [courseId]: occurrenceIndex
+    }));
+  };
+
+  const handleRemoveOccurrence = (courseId: string, day: string, occurrenceIndex: number) => {
+    setTimetableOccurrences(prev => ({
+      ...prev,
+      [day]: prev[day].filter(occ => !(occ.courseId === courseId && occ.occurrenceNumber === occurrenceIndex + 1))
+    }));
+
+    setAddedOccurrences(prev => ({
+      ...prev,
+      [courseId]: null
+    }));
   };
 
   const handleRemoveCourse = (e: React.MouseEvent, courseId: string) => {
@@ -290,13 +342,24 @@ export const Timetable = () => {
                             {occurrence.lecturer}
                           </div>
                         </div>
-                        <button 
-                          className="add-occurrence-btn"
-                          onClick={() => handleAddOccurrence(course.id, occurrence)}
-                        >
-                          <FaPlus size={12} />
-                          Add
-                        </button>
+                        {addedOccurrences[course.id] === index ? (
+                          <button 
+                            className="remove-occurrence-btn"
+                            onClick={() => handleRemoveOccurrence(course.id, occurrence.day, index)}
+                          >
+                            <FaTrash size={12} />
+                            Remove
+                          </button>
+                        ) : (
+                          <button 
+                            className="add-occurrence-btn"
+                            onClick={() => handleAddOccurrence(course.id, occurrence, index, course.name)}
+                            disabled={addedOccurrences[course.id] !== undefined && addedOccurrences[course.id] !== null}
+                          >
+                            <FaPlus size={12} />
+                            Add
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -308,28 +371,80 @@ export const Timetable = () => {
 
         {/* Right Panel - Timetable Grid */}
         <div className="timetable-grid">
-          <div className="time-headers">
-            <div></div>
+          <div className="days-header">
+            <div></div> {/* Empty cell for time column */}
             {days.map((day) => (
               <div key={day} className="day-header">{day}</div>
             ))}
           </div>
           
-          <div className="grid-container">
+          <div className="grid-scroll-container">
             <div className="time-column">
               {timeSlots.map((time) => (
-                <div key={time} className="time-slot">{time}</div>
+                <div key={time} className="time-label" style={{ height: '100px' }}>{time}</div>
               ))}
             </div>
-            {days.map((day) => (
-              <div key={day} className="day-column">
-                {timetableOccurrences[day]?.map((occurrence, index) => (
-                  <div key={`${occurrence.courseId}-${index}`} className="timetable-occurrence">
-                    {occurrence.courseName}
-                  </div>
+
+            {/* Grid lines */}
+            <div className="grid-lines">
+              <div className="horizontal-lines">
+                {timeSlots.map((_, i) => (
+                  <div key={i} className="horizontal-line" style={{ height: '100px' }} />
                 ))}
               </div>
-            ))}
+              <div className="vertical-lines">
+                {days.map((_, index) => (
+                  <div key={index} className="vertical-line" />
+                ))}
+              </div>
+            </div>
+
+            <div className="grid-content">
+              {days.map((day) => (
+                <div key={day} className="day-column">
+                  {timetableOccurrences[day]?.map((occurrence, index) => {
+                    const startTime = occurrence.time.split(' - ')[0];
+                    const endTime = occurrence.time.split(' - ')[1];
+                    const topPosition = calculateTimePosition(startTime);
+                    const blockHeight = calculateBlockHeight(startTime, endTime);
+                    
+                    return (
+                      <div 
+                        key={`${occurrence.courseId}-${index}`} 
+                        className="course-block"
+                        style={{
+                          top: `${topPosition}px`,
+                          '--block-height': `${blockHeight}px`,
+                          height: `${blockHeight}px`
+                        } as React.CSSProperties}
+                      >
+                        <div className="course-block-content">
+                          <div className="course-header-row">
+                            <span className="course-code">{occurrence.courseCode}</span>
+                            <span className="occ-tag">OCC {occurrence.occurrenceNumber}</span>
+                          </div>
+                          <div className="course-name">{occurrence.courseName}</div>
+                          {blockHeight > 50 && (
+                            <div className="course-details">
+                              <div className="detail-row">
+                                <FaUser className="detail-icon" />
+                                <span className="detail-text">{occurrence.lecturer}</span>
+                              </div>
+                              {blockHeight > 70 && (
+                                <div className="detail-row">
+                                  <FaMapMarkerAlt className="detail-icon" />
+                                  <span className="detail-text">{occurrence.venue}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
