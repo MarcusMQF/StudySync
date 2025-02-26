@@ -253,7 +253,7 @@
   display: grid;
   grid-template-columns: 80px repeat(5, 1fr);
   gap: 0px;
-  padding-right: 1.3rem;
+  padding-right: 1.4rem;
   margin-bottom: 0.75rem;
   background: #030712;
   position: sticky;
@@ -362,14 +362,14 @@
   height: 1000px;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: calc(100% - 12px);
   margin: 0;
 }
 
 .horizontal-line {
   height: 100px;
   width: 100%;
-  border-bottom: 1px solid rgba(20, 184, 166, 0.2);
+  border-bottom: 1px solid rgba(20, 184, 166, 0.5);
   box-sizing: border-box;
 }
 
@@ -401,12 +401,12 @@
   position: absolute;
   left: 0px;
   right: 0px;
-  background: rgba(20, 184, 166, 0.08);
+  background: rgba(20, 184, 166, 0.12);
   border: 1px solid rgba(20, 184, 166, 0.15);
   border-radius: 0px;
   padding: 0.5rem;
   transition: all 0.2s ease;
-  z-index: 1;
+  z-index: 3;
   backdrop-filter: blur(4px);
   box-sizing: border-box;
   overflow: hidden;

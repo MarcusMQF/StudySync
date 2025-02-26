@@ -270,40 +270,46 @@ export const Timetable = () => {
   
   const handleSaveAsPng = () => {
     if (timetableRef.current) {
-      // First, get the original scroll position and dimensions
-      const gridContainer = timetableRef.current.querySelector('.grid-scroll-container');
-      const originalScrollTop = gridContainer ? gridContainer.scrollTop : 0;
-      const originalHeight = timetableRef.current.style.height;
-      const originalOverflow = timetableRef.current.style.overflow;
+      // Create a wrapper div with wider dimensions
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'absolute';
+      wrapper.style.left = '-9999px';
+      wrapper.style.width = '1600px'; // Make it wider
+      wrapper.style.height = 'auto';
+      wrapper.style.backgroundColor = '#030712';
+      wrapper.style.padding = '40px';
+      wrapper.style.boxSizing = 'border-box';
       
-      // Temporarily modify the timetable to show all content
-      if (gridContainer) gridContainer.scrollTop = 0;
-      timetableRef.current.style.height = 'auto';
-      timetableRef.current.style.overflow = 'visible';
+      // Clone the timetable
+      const clone = timetableRef.current.cloneNode(true) as HTMLElement;
+      clone.style.height = 'auto';
+      clone.style.overflow = 'visible';
+      clone.style.width = '100%';
+      clone.style.maxWidth = '1400px';
+      clone.style.margin = '0 auto';
       
-      // Use better quality settings for html2canvas
-      html2canvas(timetableRef.current, {
-        backgroundColor: '#030712', // Match your dark background
-        scale: 2, // Higher resolution
-        useCORS: true, // Allow cross-origin images
+      // Add to wrapper
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+      
+      // Capture the image
+      html2canvas(wrapper, {
+        backgroundColor: '#030712',
+        scale: 2,
+        useCORS: true,
         allowTaint: true,
         logging: false,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight
+        width: 1600,
+        height: wrapper.offsetHeight
       }).then(canvas => {
-        // Create high-quality PNG
         const image = canvas.toDataURL('image/png', 1.0);
         const link = document.createElement('a');
         link.href = image;
         link.download = 'course-timetable.png';
         link.click();
         
-        // Restore original settings
-        if (gridContainer) gridContainer.scrollTop = originalScrollTop;
-        if (timetableRef.current) {
-          timetableRef.current.style.height = originalHeight;
-          timetableRef.current.style.overflow = originalOverflow;
-        }
+        // Clean up
+        document.body.removeChild(wrapper);
       });
     }
   };
@@ -311,7 +317,7 @@ export const Timetable = () => {
   return (
     <div className="timetable-container">
       <div className="timetable-header">
-        <h1>Course Timetable</h1>
+        <h1>Academic Timetable</h1>
         <span className="draft-tag">Beta</span>
         <div className="header-actions">
           <button className="action-button reset-button" onClick={handleReset}>
