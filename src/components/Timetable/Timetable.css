@@ -11,7 +11,7 @@
 .timetable-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0rem;
   margin-bottom: 1rem;
   width: 100%;
 }
@@ -21,6 +21,19 @@
   font-weight: 600;
   margin: 0;
   color: #ffffff;
+  display: flex;
+  align-items: center;
+  min-width: 240px; /* Fixed width to prevent layout shifts */
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+}
+
+.title-spacer {
+  display: inline-block;
+  width: 8px; /* Space between Academic and Timetable */
 }
 
 .draft-tag {
@@ -709,3 +722,13 @@
 .save-button:hover {
   background: rgba(20, 184, 166, 0.2);
 } 
+
+.decrypted-text-revealed {
+  color: #ffffff;
+  transition: color 0.3s ease;
+}
+
+.decrypted-text-encrypted {
+  color: #14b8a6;
+  transition: color 0.3s ease;
+}

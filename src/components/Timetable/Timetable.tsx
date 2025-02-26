@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import './Timetable.css';
+import DecryptedText from '../DecryptedText';
 
 interface CourseOccurrence {
   time: string;
@@ -317,7 +318,31 @@ export const Timetable = () => {
   return (
     <div className="timetable-container">
       <div className="timetable-header">
-        <h1>Academic Timetable</h1>
+        <h1 className="title-container">
+          <DecryptedText 
+            text="Academic" 
+            speed={30}
+            maxIterations={15}
+            sequential={true}
+            revealDirection="center"
+            characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()"
+            className="decrypted-text-revealed"
+            encryptedClassName="decrypted-text-encrypted"
+            animateOn="hover"
+          />
+          <span className="title-spacer"> </span>
+          <DecryptedText 
+            text="Timetable" 
+            speed={30}
+            maxIterations={15}
+            sequential={true}
+            revealDirection="center"
+            characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()"
+            className="decrypted-text-revealed"
+            encryptedClassName="decrypted-text-encrypted"
+            animateOn="hover"
+          />
+        </h1>
         <span className="draft-tag">Beta</span>
         <div className="header-actions">
           <button className="action-button reset-button" onClick={handleReset}>
