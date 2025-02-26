@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo } from 'react-icons/fa';
+import html2canvas from 'html2canvas';
 import './Timetable.css';
 
 interface CourseOccurrence {
@@ -41,6 +42,7 @@ export const Timetable = () => {
     [courseId: string]: number | null;
   }>({});
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const timetableRef = useRef<HTMLDivElement>(null);
 
   // Available courses data
   const availableCourses: Course[] = [
@@ -261,11 +263,64 @@ export const Timetable = () => {
     });
   };
 
+  const handleReset = () => {
+    setTimetableOccurrences({});
+    setAddedOccurrences({});
+  };
+  
+  const handleSaveAsPng = () => {
+    if (timetableRef.current) {
+      // First, get the original scroll position and dimensions
+      const gridContainer = timetableRef.current.querySelector('.grid-scroll-container');
+      const originalScrollTop = gridContainer ? gridContainer.scrollTop : 0;
+      const originalHeight = timetableRef.current.style.height;
+      const originalOverflow = timetableRef.current.style.overflow;
+      
+      // Temporarily modify the timetable to show all content
+      if (gridContainer) gridContainer.scrollTop = 0;
+      timetableRef.current.style.height = 'auto';
+      timetableRef.current.style.overflow = 'visible';
+      
+      // Use better quality settings for html2canvas
+      html2canvas(timetableRef.current, {
+        backgroundColor: '#030712', // Match your dark background
+        scale: 2, // Higher resolution
+        useCORS: true, // Allow cross-origin images
+        allowTaint: true,
+        logging: false,
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight
+      }).then(canvas => {
+        // Create high-quality PNG
+        const image = canvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = 'course-timetable.png';
+        link.click();
+        
+        // Restore original settings
+        if (gridContainer) gridContainer.scrollTop = originalScrollTop;
+        if (timetableRef.current) {
+          timetableRef.current.style.height = originalHeight;
+          timetableRef.current.style.overflow = originalOverflow;
+        }
+      });
+    }
+  };
+
   return (
     <div className="timetable-container">
       <div className="timetable-header">
         <h1>Course Timetable</h1>
         <span className="draft-tag">Beta</span>
+        <div className="header-actions">
+          <button className="action-button reset-button" onClick={handleReset}>
+            <FaUndo /> Reset
+          </button>
+          <button className="action-button save-button" onClick={handleSaveAsPng}>
+            <FaDownload /> Save as PNG
+          </button>
+        </div>
       </div>
       
       <div className="timetable-layout">
@@ -276,7 +331,7 @@ export const Timetable = () => {
               <FaSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="Search courses..."
+                placeholder="Search modules..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -370,7 +425,7 @@ export const Timetable = () => {
         </div>
 
         {/* Right Panel - Timetable Grid */}
-        <div className="timetable-grid">
+        <div className="timetable-grid" ref={timetableRef}>
           <div className="days-header">
             <div></div> {/* Empty cell for time column */}
             {days.map((day) => (
