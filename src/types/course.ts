@@ -1,10 +1,14 @@
-export interface CourseOccurrence {
-  day: string;
+export interface CourseSession {
   time: string;
   venue: string;
   lecturer: string;
-  activityType?: string; // LEC, TUT, etc.
+  day: string;
+  activityType?: string;
+}
+
+export interface CourseOccurrence {
   occurrenceNumber: number;
+  sessions: CourseSession[];
 }
 
 export interface Course {

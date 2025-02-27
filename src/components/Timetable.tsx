@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import './Timetable.css';
-import DecryptedText from '../DecryptedText';
+import DecryptedText from './DecryptedText';
 
 interface CourseSession {
   time: string;
@@ -358,10 +358,14 @@ export const Timetable = () => {
     }));
   };
 
-  const handleRemoveCourse = (e: React.MouseEvent, courseId: string) => {
-    e.stopPropagation();
+  const handleRemoveCourse = (courseId: string) => {
+    // Remove the course from selectedCourses
     setSelectedCourses(prev => prev.filter(course => course.id !== courseId));
+    
+    // Remove the course from expandedCourses if it's expanded
     setExpandedCourses(prev => prev.filter(id => id !== courseId));
+    
+    // Remove all occurrences of this course from the timetable
     setTimetableOccurrences(prev => {
       const newOccurrences = { ...prev };
       Object.keys(newOccurrences).forEach(day => {
@@ -370,6 +374,13 @@ export const Timetable = () => {
         );
       });
       return newOccurrences;
+    });
+    
+    // Reset the addedOccurrences state for this course
+    setAddedOccurrences(prev => {
+      const newAddedOccurrences = { ...prev };
+      delete newAddedOccurrences[courseId]; // Remove the course entry completely
+      return newAddedOccurrences;
     });
   };
 
@@ -519,7 +530,7 @@ export const Timetable = () => {
                       <FaTrash 
                         className="remove-icon" 
                         size={14}
-                        onClick={(e) => handleRemoveCourse(e, course.id)}
+                        onClick={() => handleRemoveCourse(course.id)}
                       />
                       {expandedCourses.includes(course.id) ? (
                         <FaChevronUp className="expand-icon" />

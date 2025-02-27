@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Sidebar from './components/Sidebar'
-import { Timetable } from './components/Timetable/Timetable'
+import { Timetable } from './components/Timetable'
 import './App.css'
 
 function App() {
