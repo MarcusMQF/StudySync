@@ -239,6 +239,10 @@
   color: #ffffff;
   font-weight: 500;
   margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .occurrence-details {
@@ -247,11 +251,41 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .occurrence-details > div {
   display: flex;
   align-items: center;
+}
+
+.occurrence-time, .occurrence-details > div {
+  padding-left: 20px;
+  position: relative;
+}
+
+.occurrence-time svg, .occurrence-details > div svg {
+  position: absolute;
+  left: 0;
+  top: 2px;
+}
+
+.activity-type {
+  display: inline-block;
+  background: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+/* For the timetable blocks */
+.course-block .activity-type {
+  margin-top: 0.25rem;
+  margin-left: 0.25rem;
+  font-size: 0.7rem;
 }
 
 .timetable-grid {
@@ -424,7 +458,6 @@
   padding: 0.5rem;
   transition: all 0.2s ease;
   z-index: 3;
-  backdrop-filter: blur(4px);
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
@@ -450,27 +483,31 @@
 
 .course-header-row {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.35rem;
-  margin-bottom: 0.15rem;
-  flex-wrap: wrap;
+  width: 100%;
+  margin-bottom: 0.25rem;
 }
 
 .course-code {
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
-  white-space: nowrap;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tags-container {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
 }
 
 .occ-tag {
   font-size: 0.65rem;
-  background: rgba(20, 184, 166, 0.15);
-  color: #14b8a6;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-weight: 500;
 }
 
 .course-name {
@@ -760,4 +797,40 @@
 .decrypted-text-encrypted {
   color: #14b8a6;
   transition: color 0.3s ease;
+}
+
+/* Add this to your CSS file */
+.occurrence-session {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.occurrence-session:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* Redesign the activity tag for course blocks */
+.course-block .activity-type {
+  font-size: 0.65rem;
+  margin: 0;
+  background: rgba(20, 184, 166, 0.15);
+  color: #14b8a6;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* Keep the original activity tag styling for the course panel */
+.occurrence-time .activity-type {
+  display: inline-block;
+  background: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
 }

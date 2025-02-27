@@ -1,14 +1,20 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import './Timetable.css';
 import DecryptedText from '../DecryptedText';
 
-interface CourseOccurrence {
+interface CourseSession {
   time: string;
   venue: string;
   lecturer: string;
   day: string;
+  activityType?: string; // Optional activity type (LEC, TUT, ONL)
+}
+
+interface CourseOccurrence {
+  occurrenceNumber: number;
+  sessions: CourseSession[];
 }
 
 interface Course {
@@ -26,6 +32,7 @@ interface TimetableOccurrence {
   venue: string;
   lecturer: string;
   day: string;
+  activityType?: string;
 }
 
 type TimetableOccurrences = {
@@ -77,6 +84,7 @@ export const Timetable = () => {
   }>({});
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const timetableRef = useRef<HTMLDivElement>(null);
+  const [courseColors, setCourseColors] = useState<{[courseId: string]: {bg: string, border: string}}>({});
 
   // Available courses data
   const availableCourses: Course[] = [
@@ -85,22 +93,42 @@ export const Timetable = () => {
       name: 'Computer System and Organizations',
       occurrences: [
         {
-          time: '9:00 - 11:00',
-          venue: 'Room 1, Computing Building',
-          lecturer: 'Dr. Anderson',
-          day: 'Monday'
+          occurrenceNumber: 1,
+          sessions: [
+            {
+              time: '9:00 - 11:00',
+              venue: 'Room 1, Computing Building',
+              lecturer: 'Dr. Anderson',
+              day: 'Monday',
+              activityType: 'LEC'
+            },
+            {
+              time: '14:00 - 15:00',
+              venue: 'Lab 1, Computing Building',
+              lecturer: 'Dr. Anderson',
+              day: 'Wednesday',
+              activityType: 'TUT'
+            }
+          ]
         },
         {
-          time: '14:00 - 15:00',
-          venue: 'Lab 1, Computing Building',
-          lecturer: 'Dr. Anderson',
-          day: 'Wednesday'
-        },
-        {
-          time: '11:00 - 12:00',
-          venue: 'Room 1, Computing Building',
-          lecturer: 'Dr. Wilson',
-          day: 'Friday'
+          occurrenceNumber: 2,
+          sessions: [
+            {
+              time: '11:00 - 12:00',
+              venue: 'Room 1, Computing Building',
+              lecturer: 'Dr. Wilson',
+              day: 'Friday',
+              activityType: 'LEC'
+            },
+            {
+              time: '13:00 - 14:00',
+              venue: 'Online',
+              lecturer: 'Dr. Wilson',
+              day: 'Thursday',
+              activityType: 'ONL'
+            }
+          ]
         }
       ]
     },
@@ -109,22 +137,34 @@ export const Timetable = () => {
       name: 'Fundamental of Programming',
       occurrences: [
         {
-          time: '10:00 - 11:00',
-          venue: 'Room 2, Computing Building',
-          lecturer: 'Dr. Lee',
-          day: 'Tuesday'
+          occurrenceNumber: 1,
+          sessions: [
+            {
+              time: '10:00 - 11:00',
+              venue: 'Room 2, Computing Building',
+              lecturer: 'Dr. Lee',
+              day: 'Tuesday',
+              activityType: 'LEC'
+            },
+            {
+              time: '15:00 - 16:00',
+              venue: 'Lab 2, Computing Building',
+              lecturer: 'Dr. Lee',
+              day: 'Thursday',
+              activityType: 'TUT'
+            }
+          ]
         },
         {
-          time: '15:00 - 16:00',
-          venue: 'Lab 2, Computing Building',
-          lecturer: 'Dr. Lee',
-          day: 'Thursday'
-        },
-        {
-          time: '13:00 - 14:00',
-          venue: 'Room 2, Computing Building',
-          lecturer: 'Ms. Chen',
-          day: 'Friday'
+          occurrenceNumber: 2,
+          sessions: [
+            {
+              time: '13:00 - 14:00',
+              venue: 'Room 2, Computing Building',
+              lecturer: 'Ms. Chen',
+              day: 'Friday'
+            }
+          ]
         }
       ]
     },
@@ -133,22 +173,35 @@ export const Timetable = () => {
       name: 'Computing Mathematics I',
       occurrences: [
         {
-          time: '11:00 - 12:00',
-          venue: 'Room 3, Mathematics Building',
-          lecturer: 'Dr. Zhang',
-          day: 'Monday'
+          occurrenceNumber: 1,
+          sessions: [
+            {
+              time: '11:00 - 12:00',
+              venue: 'Room 3, Mathematics Building',
+              lecturer: 'Dr. Zhang',
+              day: 'Monday',
+              activityType: 'LEC'
+            },
+            {
+              time: '14:00 - 15:00',
+              venue: 'Tutorial Room 1',
+              lecturer: 'Dr. Zhang',
+              day: 'Wednesday',
+              activityType: 'TUT'
+            }
+          ]
         },
         {
-          time: '14:00 - 15:00',
-          venue: 'Tutorial Room 1',
-          lecturer: 'Dr. Zhang',
-          day: 'Wednesday'
-        },
-        {
-          time: '9:00 - 10:00',
-          venue: 'Room 3, Mathematics Building',
-          lecturer: 'Dr. Wang',
-          day: 'Thursday'
+          occurrenceNumber: 2,
+          sessions: [
+            {
+              time: '9:00 - 10:00',
+              venue: 'Room 3, Mathematics Building',
+              lecturer: 'Dr. Wang',
+              day: 'Thursday',
+              activityType: 'LEC'
+            }
+          ]
         }
       ]
     },
@@ -157,22 +210,35 @@ export const Timetable = () => {
       name: 'Human Computer Interaction',
       occurrences: [
         {
-          time: '13:00 - 14:00',
-          venue: 'Room 4, Computing Building',
-          lecturer: 'Dr. Taylor',
-          day: 'Tuesday'
+          occurrenceNumber: 1,
+          sessions: [
+            {
+              time: '13:00 - 14:00',
+              venue: 'Room 4, Computing Building',
+              lecturer: 'Dr. Taylor',
+              day: 'Tuesday',
+              activityType: 'LEC'
+            },
+            {
+              time: '10:00 - 11:00',
+              venue: 'Lab 3, Computing Building',
+              lecturer: 'Dr. Taylor',
+              day: 'Thursday',
+              activityType: 'TUT'
+            }
+          ]
         },
         {
-          time: '10:00 - 11:00',
-          venue: 'Lab 3, Computing Building',
-          lecturer: 'Dr. Taylor',
-          day: 'Thursday'
-        },
-        {
-          time: '15:00 - 16:00',
-          venue: 'Room 4, Computing Building',
-          lecturer: 'Ms. Rodriguez',
-          day: 'Friday'
+          occurrenceNumber: 2,
+          sessions: [
+            {
+              time: '15:00 - 16:00',
+              venue: 'Room 4, Computing Building',
+              lecturer: 'Ms. Rodriguez',
+              day: 'Friday',
+              activityType: 'ONL'
+            }
+          ]
         }
       ]
     }
@@ -247,34 +313,44 @@ export const Timetable = () => {
     );
   };
 
-  const handleAddOccurrence = (courseId: string, occurrence: CourseOccurrence, occurrenceIndex: number, courseName: string) => {
-    const newOccurrence: TimetableOccurrence = {
-      courseId,
-      courseName,
-      courseCode: courseId,
-      occurrenceNumber: occurrenceIndex + 1,
-      time: occurrence.time,
-      venue: occurrence.venue,
-      lecturer: occurrence.lecturer,
-      day: occurrence.day
-    };
+  const handleAddOccurrence = (courseId: string, occurrence: CourseOccurrence, courseName: string) => {
+    // Add all sessions from this occurrence to the timetable
+    occurrence.sessions.forEach(session => {
+      const newOccurrence: TimetableOccurrence = {
+        courseId,
+        courseName,
+        courseCode: courseId,
+        occurrenceNumber: occurrence.occurrenceNumber,
+        time: session.time,
+        venue: session.venue,
+        lecturer: session.lecturer,
+        day: session.day,
+        activityType: session.activityType
+      };
 
-    setTimetableOccurrences(prev => ({
-      ...prev,
-      [occurrence.day]: [...(prev[occurrence.day] || []), newOccurrence]
-    }));
+      setTimetableOccurrences(prev => ({
+        ...prev,
+        [session.day]: [...(prev[session.day] || []), newOccurrence]
+      }));
+    });
 
     setAddedOccurrences(prev => ({
       ...prev,
-      [courseId]: occurrenceIndex
+      [courseId]: occurrence.occurrenceNumber
     }));
   };
 
-  const handleRemoveOccurrence = (courseId: string, day: string, occurrenceIndex: number) => {
-    setTimetableOccurrences(prev => ({
-      ...prev,
-      [day]: prev[day].filter(occ => !(occ.courseId === courseId && occ.occurrenceNumber === occurrenceIndex + 1))
-    }));
+  const handleRemoveOccurrence = (courseId: string, occurrenceNumber: number) => {
+    // Remove all sessions of this occurrence from all days
+    setTimetableOccurrences(prev => {
+      const newOccurrences = { ...prev };
+      Object.keys(newOccurrences).forEach(day => {
+        newOccurrences[day] = newOccurrences[day].filter(
+          (occ: TimetableOccurrence) => !(occ.courseId === courseId && occ.occurrenceNumber === occurrenceNumber)
+        );
+      });
+      return newOccurrences;
+    });
 
     setAddedOccurrences(prev => ({
       ...prev,
@@ -348,13 +424,15 @@ export const Timetable = () => {
     }
   };
 
-  // Create a memo for course colors to ensure consistency
-  const courseColors = useMemo(() => {
-    const colors: { [key: string]: { bg: string; border: string } } = {};
+  // Add this useEffect to generate colors when courses are loaded
+  useEffect(() => {
+    const colors: {[courseId: string]: {bg: string, border: string}} = {};
+    
     availableCourses.forEach(course => {
       colors[course.id] = generateCourseColor(course.id);
     });
-    return colors;
+    
+    setCourseColors(colors);
   }, [availableCourses]);
 
   return (
@@ -453,27 +531,36 @@ export const Timetable = () => {
                 </div>
                 {expandedCourses.includes(course.id) && (
                   <div className="course-occurrences">
-                    {course.occurrences.map((occurrence, index) => (
-                      <div key={index} className="occurrence-item">
-                        <span className="occurrence-number">Occurrence {index + 1}</span>
-                        <div className="occurrence-time">
-                          <FaClock size={12} style={{ marginRight: '4px' }} />
-                          {occurrence.day}, {occurrence.time}
-                        </div>
-                        <div className="occurrence-details">
-                          <div>
-                            <FaMapMarkerAlt size={12} style={{ marginRight: '4px' }} />
-                            {occurrence.venue}
+                    {course.occurrences.map((occurrence) => (
+                      <div key={occurrence.occurrenceNumber} className="occurrence-item">
+                        <span className="occurrence-number">Occurrence {occurrence.occurrenceNumber}</span>
+                        
+                        {occurrence.sessions.map((session, sessionIndex) => (
+                          <div key={sessionIndex} className="occurrence-session">
+                            <div className="occurrence-time">
+                              <FaClock size={12} style={{ marginRight: '4px' }} />
+                              {session.day}, {session.time}
+                              {session.activityType && (
+                                <span className="activity-type">{session.activityType}</span>
+                              )}
+                            </div>
+                            <div className="occurrence-details">
+                              <div>
+                                <FaMapMarkerAlt size={12} style={{ marginRight: '4px' }} />
+                                {session.venue}
+                              </div>
+                              <div>
+                                <FaUser size={12} style={{ marginRight: '4px' }} />
+                                {session.lecturer}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <FaUser size={12} style={{ marginRight: '4px' }} />
-                            {occurrence.lecturer}
-                          </div>
-                        </div>
-                        {addedOccurrences[course.id] === index ? (
+                        ))}
+                        
+                        {addedOccurrences[course.id] === occurrence.occurrenceNumber ? (
                           <button 
                             className="remove-occurrence-btn"
-                            onClick={() => handleRemoveOccurrence(course.id, occurrence.day, index)}
+                            onClick={() => handleRemoveOccurrence(course.id, occurrence.occurrenceNumber)}
                           >
                             <FaTrash size={12} />
                             Remove
@@ -481,7 +568,7 @@ export const Timetable = () => {
                         ) : (
                           <button 
                             className="add-occurrence-btn"
-                            onClick={() => handleAddOccurrence(course.id, occurrence, index, course.name)}
+                            onClick={() => handleAddOccurrence(course.id, occurrence, course.name)}
                             disabled={addedOccurrences[course.id] !== undefined && addedOccurrences[course.id] !== null}
                           >
                             <FaPlus size={12} />
@@ -551,7 +638,12 @@ export const Timetable = () => {
                       >
                         <div className="course-header-row">
                           <span className="course-code">{occurrence.courseCode}</span>
-                          <span className="occ-tag">OCC {occurrence.occurrenceNumber}</span>
+                          <div className="tags-container">
+                            <span className="occ-tag">OCC {occurrence.occurrenceNumber}</span>
+                            {occurrence.activityType && (
+                              <span className="activity-type">{occurrence.activityType}</span>
+                            )}
+                          </div>
                         </div>
                         <div className="course-name">{occurrence.courseName}</div>
                         {blockHeight > 50 && (
