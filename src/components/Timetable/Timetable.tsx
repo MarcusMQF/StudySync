@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import './Timetable.css';
@@ -30,6 +30,39 @@ interface TimetableOccurrence {
 
 type TimetableOccurrences = {
   [key: string]: TimetableOccurrence[];
+};
+
+// Add this function to generate consistent colors for courses
+const generateCourseColor = (courseCode: string) => {
+  // Color palette - modern, accessible colors
+  const colors = [
+    { bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.3)' },    // Red
+    { bg: 'rgba(249, 115, 22, 0.15)', border: 'rgba(249, 115, 22, 0.3)' },  // Orange
+    { bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.3)' },  // Amber
+    { bg: 'rgba(132, 204, 22, 0.15)', border: 'rgba(132, 204, 22, 0.3)' },  // Lime
+    { bg: 'rgba(34, 197, 94, 0.15)', border: 'rgba(34, 197, 94, 0.3)' },    // Green
+    { bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.3)' },  // Emerald
+    { bg: 'rgba(20, 184, 166, 0.15)', border: 'rgba(20, 184, 166, 0.3)' },  // Teal
+    { bg: 'rgba(6, 182, 212, 0.15)', border: 'rgba(6, 182, 212, 0.3)' },    // Cyan
+    { bg: 'rgba(14, 165, 233, 0.15)', border: 'rgba(14, 165, 233, 0.3)' },  // Sky
+    { bg: 'rgba(59, 130, 246, 0.15)', border: 'rgba(59, 130, 246, 0.3)' },  // Blue
+    { bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.3)' },  // Indigo
+    { bg: 'rgba(139, 92, 246, 0.15)', border: 'rgba(139, 92, 246, 0.3)' },  // Violet
+    { bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.3)' },  // Purple
+    { bg: 'rgba(217, 70, 239, 0.15)', border: 'rgba(217, 70, 239, 0.3)' },  // Fuchsia
+    { bg: 'rgba(236, 72, 153, 0.15)', border: 'rgba(236, 72, 153, 0.3)' },  // Pink
+    { bg: 'rgba(244, 63, 94, 0.15)', border: 'rgba(244, 63, 94, 0.3)' },    // Rose
+  ];
+  
+  // Hash the course code to get a consistent index
+  let hash = 0;
+  for (let i = 0; i < courseCode.length; i++) {
+    hash = courseCode.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  // Use the hash to select a color
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
 };
 
 export const Timetable = () => {
@@ -315,6 +348,15 @@ export const Timetable = () => {
     }
   };
 
+  // Create a memo for course colors to ensure consistency
+  const courseColors = useMemo(() => {
+    const colors: { [key: string]: { bg: string; border: string } } = {};
+    availableCourses.forEach(course => {
+      colors[course.id] = generateCourseColor(course.id);
+    });
+    return colors;
+  }, [availableCourses]);
+
   return (
     <div className="timetable-container">
       <div className="timetable-header">
@@ -493,6 +535,7 @@ export const Timetable = () => {
                     const endTime = occurrence.time.split(' - ')[1];
                     const topPosition = calculateTimePosition(startTime);
                     const blockHeight = calculateBlockHeight(startTime, endTime);
+                    const courseColor = courseColors[occurrence.courseId] || { bg: 'rgba(20, 184, 166, 0.15)', border: 'rgba(20, 184, 166, 0.3)' };
                     
                     return (
                       <div 
@@ -501,30 +544,30 @@ export const Timetable = () => {
                         style={{
                           top: `${topPosition}px`,
                           '--block-height': `${blockHeight}px`,
-                          height: `${blockHeight}px`
+                          height: `${blockHeight}px`,
+                          background: courseColor.bg,
+                          borderColor: courseColor.border
                         } as React.CSSProperties}
                       >
-                        <div className="course-block-content">
-                          <div className="course-header-row">
-                            <span className="course-code">{occurrence.courseCode}</span>
-                            <span className="occ-tag">OCC {occurrence.occurrenceNumber}</span>
-                          </div>
-                          <div className="course-name">{occurrence.courseName}</div>
-                          {blockHeight > 50 && (
-                            <div className="course-details">
-                              <div className="detail-row">
-                                <FaUser className="detail-icon" />
-                                <span className="detail-text">{occurrence.lecturer}</span>
-                              </div>
-                              {blockHeight > 70 && (
-                                <div className="detail-row">
-                                  <FaMapMarkerAlt className="detail-icon" />
-                                  <span className="detail-text">{occurrence.venue}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                        <div className="course-header-row">
+                          <span className="course-code">{occurrence.courseCode}</span>
+                          <span className="occ-tag">OCC {occurrence.occurrenceNumber}</span>
                         </div>
+                        <div className="course-name">{occurrence.courseName}</div>
+                        {blockHeight > 50 && (
+                          <div className="course-details">
+                            <div className="detail-row">
+                              <FaUser className="detail-icon" />
+                              <span className="detail-text">{occurrence.lecturer}</span>
+                            </div>
+                            {blockHeight > 70 && (
+                              <div className="detail-row">
+                                <FaMapMarkerAlt className="detail-icon" />
+                                <span className="detail-text">{occurrence.venue}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
