@@ -834,3 +834,18 @@
   font-weight: 600;
   margin-left: 0.5rem;
 }
+
+.loading-message,
+.no-results {
+  padding: 15px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.loading-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+}

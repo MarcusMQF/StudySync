@@ -3,25 +3,8 @@ import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, 
 import html2canvas from 'html2canvas';
 import './Timetable.css';
 import DecryptedText from './DecryptedText';
-
-interface CourseSession {
-  time: string;
-  venue: string;
-  lecturer: string;
-  day: string;
-  activityType?: string; // Optional activity type (LEC, TUT, ONL)
-}
-
-interface CourseOccurrence {
-  occurrenceNumber: number;
-  sessions: CourseSession[];
-}
-
-interface Course {
-  id: string;
-  name: string;
-  occurrences: CourseOccurrence[];
-}
+import { loadExcelData } from '../utils/excelParser';
+import { Course, CourseOccurrence, CourseSession } from '../types/course';
 
 interface TimetableOccurrence {
   courseId: string;
@@ -85,165 +68,27 @@ export const Timetable = () => {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const timetableRef = useRef<HTMLDivElement>(null);
   const [courseColors, setCourseColors] = useState<{[courseId: string]: {bg: string, border: string}}>({});
+  const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Available courses data
-  const availableCourses: Course[] = [
-    {
-      id: 'WIX1001',
-      name: 'Computer System and Organizations',
-      occurrences: [
-        {
-          occurrenceNumber: 1,
-          sessions: [
-            {
-              time: '9:00 - 11:00',
-              venue: 'Room 1, Computing Building',
-              lecturer: 'Dr. Anderson',
-              day: 'Monday',
-              activityType: 'LEC'
-            },
-            {
-              time: '14:00 - 15:00',
-              venue: 'Lab 1, Computing Building',
-              lecturer: 'Dr. Anderson',
-              day: 'Wednesday',
-              activityType: 'TUT'
-            }
-          ]
-        },
-        {
-          occurrenceNumber: 2,
-          sessions: [
-            {
-              time: '11:00 - 12:00',
-              venue: 'Room 1, Computing Building',
-              lecturer: 'Dr. Wilson',
-              day: 'Friday',
-              activityType: 'LEC'
-            },
-            {
-              time: '13:00 - 14:00',
-              venue: 'Online',
-              lecturer: 'Dr. Wilson',
-              day: 'Thursday',
-              activityType: 'ONL'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'WIX1002',
-      name: 'Fundamental of Programming',
-      occurrences: [
-        {
-          occurrenceNumber: 1,
-          sessions: [
-            {
-              time: '10:00 - 11:00',
-              venue: 'Room 2, Computing Building',
-              lecturer: 'Dr. Lee',
-              day: 'Tuesday',
-              activityType: 'LEC'
-            },
-            {
-              time: '15:00 - 16:00',
-              venue: 'Lab 2, Computing Building',
-              lecturer: 'Dr. Lee',
-              day: 'Thursday',
-              activityType: 'TUT'
-            }
-          ]
-        },
-        {
-          occurrenceNumber: 2,
-          sessions: [
-            {
-              time: '13:00 - 14:00',
-              venue: 'Room 2, Computing Building',
-              lecturer: 'Ms. Chen',
-              day: 'Friday'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'WIX1003',
-      name: 'Computing Mathematics I',
-      occurrences: [
-        {
-          occurrenceNumber: 1,
-          sessions: [
-            {
-              time: '11:00 - 12:00',
-              venue: 'Room 3, Mathematics Building',
-              lecturer: 'Dr. Zhang',
-              day: 'Monday',
-              activityType: 'LEC'
-            },
-            {
-              time: '14:00 - 15:00',
-              venue: 'Tutorial Room 1',
-              lecturer: 'Dr. Zhang',
-              day: 'Wednesday',
-              activityType: 'TUT'
-            }
-          ]
-        },
-        {
-          occurrenceNumber: 2,
-          sessions: [
-            {
-              time: '9:00 - 10:00',
-              venue: 'Room 3, Mathematics Building',
-              lecturer: 'Dr. Wang',
-              day: 'Thursday',
-              activityType: 'LEC'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'WIA2010',
-      name: 'Human Computer Interaction',
-      occurrences: [
-        {
-          occurrenceNumber: 1,
-          sessions: [
-            {
-              time: '13:00 - 14:00',
-              venue: 'Room 4, Computing Building',
-              lecturer: 'Dr. Taylor',
-              day: 'Tuesday',
-              activityType: 'LEC'
-            },
-            {
-              time: '10:00 - 11:00',
-              venue: 'Lab 3, Computing Building',
-              lecturer: 'Dr. Taylor',
-              day: 'Thursday',
-              activityType: 'TUT'
-            }
-          ]
-        },
-        {
-          occurrenceNumber: 2,
-          sessions: [
-            {
-              time: '15:00 - 16:00',
-              venue: 'Room 4, Computing Building',
-              lecturer: 'Ms. Rodriguez',
-              day: 'Friday',
-              activityType: 'ONL'
-            }
-          ]
-        }
-      ]
-    }
-  ];
-  
+  // Load courses from Excel file
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setIsLoading(true);
+        const courses = await loadExcelData();
+        setAvailableCourses(courses);
+        console.log('Loaded courses:', courses);
+      } catch (error) {
+        console.error('Error loading courses:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const timeSlots = Array.from({ length: 10 }, (_, i) => {
     const hour = i + 8;
@@ -502,17 +347,24 @@ export const Timetable = () => {
                 onFocus={() => setShowSearchResults(true)}
               />
             </div>
-            {showSearchResults && searchResults.length > 0 && (
+            
+            {showSearchResults && searchQuery.trim() !== '' && (
               <div className="search-results">
-                {searchResults.map((course) => (
-                  <div
-                    key={course.id}
-                    className="search-result-item"
-                    onClick={() => handleCourseSelect(course)}
-                  >
-                    <strong>{course.id}</strong>: {course.name}
-                  </div>
-                ))}
+                {isLoading ? (
+                  <div className="loading-message">Loading courses...</div>
+                ) : searchResults.length > 0 ? (
+                  searchResults.map(course => (
+                    <div
+                      key={course.id}
+                      className="search-result-item"
+                      onClick={() => handleCourseSelect(course)}
+                    >
+                      <strong>{course.id}</strong>: {course.name}
+                    </div>
+                  ))
+                ) : (
+                  <div className="no-results">No courses found</div>
+                )}
               </div>
             )}
           </div>
