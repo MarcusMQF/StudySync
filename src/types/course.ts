@@ -1,13 +1,13 @@
 export interface CourseSession {
+  day: string;
   time: string;
   venue: string;
   lecturer: string;
-  day: string;
-  activityType?: string;
+  activityType: string;
 }
 
 export interface CourseOccurrence {
-  occurrenceNumber: number;
+  occurrenceNumber: string;
   sessions: CourseSession[];
 }
 
@@ -21,12 +21,12 @@ export interface TimetableOccurrence {
   courseId: string;
   courseName: string;
   courseCode: string;
-  occurrenceNumber: number;
+  occurrenceNumber: string;
   time: string;
   venue: string;
   lecturer: string;
   day: string;
-  activityType?: string;
+  activityType: string;
 }
 
 export interface TimetableState {

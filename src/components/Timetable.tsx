@@ -4,13 +4,13 @@ import html2canvas from 'html2canvas';
 import './Timetable.css';
 import DecryptedText from './DecryptedText';
 import { loadExcelData } from '../utils/excelParser';
-import { Course, CourseOccurrence, CourseSession } from '../types/course';
+import { Course, CourseOccurrence } from '../types/course';
 
 interface TimetableOccurrence {
   courseId: string;
   courseName: string;
   courseCode: string;
-  occurrenceNumber: number;
+  occurrenceNumber: string;
   time: string;
   venue: string;
   lecturer: string;
@@ -63,7 +63,7 @@ export const Timetable = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [timetableOccurrences, setTimetableOccurrences] = useState<TimetableOccurrences>({});
   const [addedOccurrences, setAddedOccurrences] = useState<{
-    [courseId: string]: number | null;
+    [courseId: string]: string | null;
   }>({});
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const timetableRef = useRef<HTMLDivElement>(null);
@@ -161,22 +161,25 @@ export const Timetable = () => {
   const handleAddOccurrence = (courseId: string, occurrence: CourseOccurrence, courseName: string) => {
     // Add all sessions from this occurrence to the timetable
     occurrence.sessions.forEach(session => {
-      const newOccurrence: TimetableOccurrence = {
-        courseId,
-        courseName,
-        courseCode: courseId,
-        occurrenceNumber: occurrence.occurrenceNumber,
-        time: session.time,
-        venue: session.venue,
-        lecturer: session.lecturer,
-        day: session.day,
-        activityType: session.activityType
-      };
+      // Only add sessions that have both day and time
+      if (session.day && session.time) {
+        const newOccurrence: TimetableOccurrence = {
+          courseId,
+          courseName,
+          courseCode: courseId,
+          occurrenceNumber: occurrence.occurrenceNumber,
+          time: session.time,
+          venue: session.venue || 'No venue specified',
+          lecturer: session.lecturer || 'No lecturer specified',
+          day: session.day,
+          activityType: session.activityType
+        };
 
-      setTimetableOccurrences(prev => ({
-        ...prev,
-        [session.day]: [...(prev[session.day] || []), newOccurrence]
-      }));
+        setTimetableOccurrences(prev => ({
+          ...prev,
+          [session.day]: [...(prev[session.day] || []), newOccurrence]
+        }));
+      }
     });
 
     setAddedOccurrences(prev => ({
@@ -185,7 +188,7 @@ export const Timetable = () => {
     }));
   };
 
-  const handleRemoveOccurrence = (courseId: string, occurrenceNumber: number) => {
+  const handleRemoveOccurrence = (courseId: string, occurrenceNumber: string) => {
     // Remove all sessions of this occurrence from all days
     setTimetableOccurrences(prev => {
       const newOccurrences = { ...prev };
@@ -398,23 +401,30 @@ export const Timetable = () => {
                       <div key={occurrence.occurrenceNumber} className="occurrence-item">
                         <span className="occurrence-number">Occurrence {occurrence.occurrenceNumber}</span>
                         
+                        {/* Display all sessions for this occurrence */}
                         {occurrence.sessions.map((session, sessionIndex) => (
                           <div key={sessionIndex} className="occurrence-session">
                             <div className="occurrence-time">
                               <FaClock size={12} style={{ marginRight: '4px' }} />
-                              {session.day}, {session.time}
+                              {session.day && session.time ? (
+                                <>
+                                  {session.day}, {session.time}
+                                </>
+                              ) : (
+                                <span className="incomplete-details">{session.day}</span>
+                              )}
                               {session.activityType && (
                                 <span className="activity-type">{session.activityType}</span>
                               )}
                             </div>
                             <div className="occurrence-details">
-                              <div>
+                              <div className="detail-row">
                                 <FaMapMarkerAlt size={12} style={{ marginRight: '4px' }} />
-                                {session.venue}
+                                <span className="detail-text">{session.venue || 'No venue specified'}</span>
                               </div>
-                              <div>
+                              <div className="detail-row">
                                 <FaUser size={12} style={{ marginRight: '4px' }} />
-                                {session.lecturer}
+                                <span className="detail-text">{session.lecturer || 'No lecturer specified'}</span>
                               </div>
                             </div>
                           </div>
@@ -423,7 +433,10 @@ export const Timetable = () => {
                         {addedOccurrences[course.id] === occurrence.occurrenceNumber ? (
                           <button 
                             className="remove-occurrence-btn"
-                            onClick={() => handleRemoveOccurrence(course.id, occurrence.occurrenceNumber)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveOccurrence(course.id, occurrence.occurrenceNumber);
+                            }}
                           >
                             <FaTrash size={12} />
                             Remove
@@ -431,7 +444,10 @@ export const Timetable = () => {
                         ) : (
                           <button 
                             className="add-occurrence-btn"
-                            onClick={() => handleAddOccurrence(course.id, occurrence, course.name)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddOccurrence(course.id, occurrence, course.name);
+                            }}
                             disabled={addedOccurrences[course.id] !== undefined && addedOccurrences[course.id] !== null}
                           >
                             <FaPlus size={12} />
