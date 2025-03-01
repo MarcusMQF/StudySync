@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { Course, CourseOccurrence, CourseSession } from '../types/course';
+import { Course, CourseSession } from '../types/course';
 
 export const parseExcelFile = async (file: File): Promise<Course[]> => {
   return new Promise((resolve, reject) => {
@@ -19,38 +19,29 @@ export const parseExcelFile = async (file: File): Promise<Course[]> => {
         const courses: { [key: string]: Course } = {};
         
         rawData.forEach((row: any) => {
-          // Map Excel columns to our data structure
-          const courseId = row['Module Code'];
-          const courseName = row['Module Name'];
-          const occurrenceNumber = (row['Occurrence'] || '1').toString();
+          const courseId = row['Module Code']?.toString().trim();
+          const courseName = row['Module Name']?.toString().trim();
+          const occurrenceNumber = row['Occurrence']?.toString().trim() || '1';
+          const dayTimeInfo = row['Day / Start Duration ']?.toString().trim();
+          const activityType = row['Activity']?.toString().trim() || 'LEC';
           
-          // Parse day and time from the "Day / Start Duration" field
-          const dayTimeInfo = row['Day / Start Duration'];
-          let day = '';
-          let time = '';
-          
-          if (dayTimeInfo) {
-            const lines = dayTimeInfo.split('\n');
-            if (lines.length >= 1) {
-              // Extract day and time
-              const dayTimeParts = lines[0].split(' ');
-              if (dayTimeParts.length >= 1) {
-                day = dayTimeParts[0].trim();
-                
-                // Extract time if available
-                const timeMatch = dayTimeInfo.match(/(\d+:\d+)\s*-\s*(\d+:\d+)/);
-                if (timeMatch) {
-                  time = `${timeMatch[1]} - ${timeMatch[2]}`;
-                }
-              }
-            }
+          // Skip invalid rows
+          if (!courseId || !courseName || !dayTimeInfo) {
+            return;
           }
+
+          // Parse day and time
+          const dayMatch = dayTimeInfo.match(/^([A-Za-z]+)/);
+          const timeMatch = dayTimeInfo.match(/(\d+:\d+)\s*-\s*(\d+:\d+)/);
           
-          const venue = row['Room'] || '';
-          const lecturer = row['Tutor'] || '';
-          const activityType = row['Activity'] || ''; // LEC, TUT, etc.
+          if (!dayMatch || !timeMatch) {
+            return;
+          }
+
+          const day = dayMatch[1].toUpperCase();
+          const time = `${timeMatch[1]} - ${timeMatch[2]}`;
           
-          // Create or update the course
+          // Create course if it doesn't exist
           if (!courses[courseId]) {
             courses[courseId] = {
               id: courseId,
@@ -58,38 +49,60 @@ export const parseExcelFile = async (file: File): Promise<Course[]> => {
               occurrences: []
             };
           }
-          
-          // Check if this occurrence already exists (same occurrence number)
-          const existingOccIndex = courses[courseId].occurrences.findIndex(
-            occ => occ.occurrenceNumber === occurrenceNumber &&
-            occ.sessions.some(session => session.day === day && session.time === time)
+
+          // Find or create occurrence
+          let occurrence = courses[courseId].occurrences.find(
+            occ => occ.occurrenceNumber === occurrenceNumber
           );
-          
-          if (existingOccIndex >= 0) {
-            // Update existing occurrence by adding a new session
-            const existingOcc = courses[courseId].occurrences[existingOccIndex];
-            const newSession: CourseSession = {
-              day,
-              time,
-              venue,
-              lecturer,
-              activityType
-            };
-            existingOcc.sessions.push(newSession);
-          } else {
-            // Add new occurrence with initial session
-            const newOccurrence: CourseOccurrence = {
+
+          if (!occurrence) {
+            occurrence = {
               occurrenceNumber,
-              sessions: [{
-                day,
-                time,
-                venue,
-                lecturer,
-                activityType
-              }]
+              activityType: activityType.toUpperCase(),
+              sessions: []
             };
-            courses[courseId].occurrences.push(newOccurrence);
+            courses[courseId].occurrences.push(occurrence);
           }
+
+          // Create new session
+          const session: CourseSession = {
+            day,
+            time,
+            venue: row['Room']?.toString().trim() || '',
+            lecturer: row['Tutor']?.toString().trim() || ''
+          };
+
+          // Check if this exact session already exists
+          const sessionExists = occurrence.sessions.some(
+            existingSession =>
+              existingSession.day === session.day &&
+              existingSession.time === session.time &&
+              existingSession.venue === session.venue &&
+              existingSession.lecturer === session.lecturer
+          );
+
+          // Only add if this exact session doesn't exist
+          if (!sessionExists) {
+            occurrence.sessions.push(session);
+          }
+        });
+
+        // Sort occurrences and sessions
+        Object.values(courses).forEach(course => {
+          // Sort occurrences by number
+          course.occurrences.sort((a, b) => 
+            parseInt(a.occurrenceNumber) - parseInt(b.occurrenceNumber)
+          );
+
+          // Sort sessions in each occurrence by day and time
+          course.occurrences.forEach(occurrence => {
+            occurrence.sessions.sort((a, b) => {
+              const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+              const dayDiff = days.indexOf(a.day) - days.indexOf(b.day);
+              if (dayDiff !== 0) return dayDiff;
+              return a.time.localeCompare(b.time);
+            });
+          });
         });
         
         resolve(Object.values(courses));
@@ -121,6 +134,7 @@ export const parseStaticExcelData = (data: ArrayBuffer): Course[] => {
       const courseId = row['Module Code'];
       const courseName = row['Module Name'];
       const occurrenceNumber = (row['Occurrence'] || '1').toString();
+      const activityType = (row['Activity'] || 'LEC').toString().trim().toUpperCase();
       
       // Parse day and time from the "Day / Start Duration" field
       const dayTimeInfo = row['Day / Start Duration'];
@@ -150,7 +164,6 @@ export const parseStaticExcelData = (data: ArrayBuffer): Course[] => {
       
       const venue = row['Room'] || '';
       const lecturer = row['Tutor'] || '';
-      const activityType = row['Activity'] || ''; // LEC, TUT, etc.
       
       // Skip rows with missing essential data
       if (!courseId || !courseName) {
@@ -166,42 +179,55 @@ export const parseStaticExcelData = (data: ArrayBuffer): Course[] => {
         };
       }
       
-      // Check if this occurrence already exists (same occurrence number, day and time)
-      const existingOccIndex = courses[courseId].occurrences.findIndex(
-        occ => occ.occurrenceNumber === occurrenceNumber &&
-        occ.sessions.some(session => session.day === day && session.time === time)
+      // Find or create occurrence
+      let occurrence = courses[courseId].occurrences.find(
+        occ => occ.occurrenceNumber === occurrenceNumber
       );
       
-      if (existingOccIndex >= 0) {
-        // Update existing occurrence by adding a new session
-        const existingOcc = courses[courseId].occurrences[existingOccIndex];
-        const newSession: CourseSession = {
-          day,
-          time,
-          venue,
-          lecturer,
-          activityType
-        };
-        existingOcc.sessions.push(newSession);
-      } else {
-        // Add new occurrence with initial session
-        const newOccurrence: CourseOccurrence = {
+      if (!occurrence) {
+        occurrence = {
           occurrenceNumber,
-          sessions: [{
-            day,
-            time,
-            venue,
-            lecturer,
-            activityType
-          }]
+          activityType,
+          sessions: []
         };
-        courses[courseId].occurrences.push(newOccurrence);
+        courses[courseId].occurrences.push(occurrence);
+      }
+      
+      // Add new session
+      const newSession = {
+        day,
+        time,
+        venue,
+        lecturer
+      };
+      
+      // Check if session already exists
+      const sessionExists = occurrence.sessions.some(
+        existingSession =>
+          existingSession.day === newSession.day &&
+          existingSession.time === newSession.time &&
+          existingSession.venue === newSession.venue &&
+          existingSession.lecturer === newSession.lecturer
+      );
+      
+      if (!sessionExists) {
+        occurrence.sessions.push(newSession);
       }
     });
     
     // Sort occurrences by occurrence number for each course
     Object.values(courses).forEach(course => {
       course.occurrences.sort((a, b) => a.occurrenceNumber.localeCompare(b.occurrenceNumber));
+      
+      // Sort sessions in each occurrence
+      course.occurrences.forEach(occurrence => {
+        occurrence.sessions.sort((a, b) => {
+          const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+          const dayDiff = days.indexOf(a.day.toUpperCase()) - days.indexOf(b.day.toUpperCase());
+          if (dayDiff !== 0) return dayDiff;
+          return a.time.localeCompare(b.time);
+        });
+      });
     });
     
     return Object.values(courses);
@@ -243,20 +269,19 @@ function getSampleCourses(): Course[] {
       occurrences: [
         {
           occurrenceNumber: "1",
+          activityType: "LEC",
           sessions: [
             {
               day: "Monday",
               time: "10:00 - 12:00",
               venue: "Room A101",
-              lecturer: "Dr. Smith",
-              activityType: "LEC"
+              lecturer: "Dr. Smith"
             },
             {
               day: "Wednesday",
               time: "14:00 - 16:00",
               venue: "Room B202",
-              lecturer: "Dr. Smith",
-              activityType: "TUT"
+              lecturer: "Dr. Smith"
             }
           ]
         }
@@ -268,13 +293,13 @@ function getSampleCourses(): Course[] {
       occurrences: [
         {
           occurrenceNumber: "1",
+          activityType: "LEC",
           sessions: [
             {
               day: "Tuesday",
               time: "09:00 - 11:00",
               venue: "Room C303",
-              lecturer: "Prof. Johnson",
-              activityType: "LEC"
+              lecturer: "Prof. Johnson"
             }
           ]
         }
@@ -286,45 +311,19 @@ function getSampleCourses(): Course[] {
       occurrences: [
         {
           occurrenceNumber: "1",
+          activityType: "LEC",
           sessions: [
             {
               day: "Monday",
               time: "14:00 - 16:00",
               venue: "Lab 1",
-              lecturer: "Dr. Lee",
-              activityType: "LEC"
+              lecturer: "Dr. Lee"
             },
             {
               day: "Thursday",
               time: "10:00 - 12:00",
               venue: "Lab 2",
-              lecturer: "Dr. Lee",
-              activityType: "LAB"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: "MATH2001",
-      name: "CALCULUS",
-      occurrences: [
-        {
-          occurrenceNumber: "1",
-          sessions: [
-            {
-              day: "Tuesday",
-              time: "13:00 - 15:00",
-              venue: "Room D404",
-              lecturer: "Prof. Williams",
-              activityType: "LEC"
-            },
-            {
-              day: "Friday",
-              time: "09:00 - 11:00",
-              venue: "Room D405",
-              lecturer: "Dr. Chen",
-              activityType: "TUT"
+              lecturer: "Dr. Lee"
             }
           ]
         }
@@ -368,8 +367,8 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
           time: string;
           venue: string;
           lecturers: Set<string>;
-          activityType: string;
         }[];
+        activityType: string;
       }>;
     }>();
 
@@ -455,10 +454,11 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
       }
       const course = courseMap.get(courseId)!;
 
-      // Get or create occurrence
+      // Get or create occurrence with activity type
       if (!course.occurrences.has(occurrenceStr)) {
         course.occurrences.set(occurrenceStr, {
-          sessions: []
+          sessions: [],
+          activityType: activityType.toUpperCase() || 'LEC'  // Default to LEC if not specified
         });
       }
       const occurrence = course.occurrences.get(occurrenceStr)!;
@@ -468,8 +468,7 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
         day: day && time ? day : 'No day and time specified',
         time: day && time ? time : '',
         venue,
-        lecturers,
-        activityType: activityType.toUpperCase()
+        lecturers
       });
     });
 
@@ -480,13 +479,13 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
       occurrences: Array.from(courseData.occurrences.entries())
         .map(([occNumber, occData]) => ({
           occurrenceNumber: occNumber,
+          activityType: occData.activityType || 'LEC',  // Ensure activityType is always present
           sessions: occData.sessions
             .map(session => ({
               day: session.day,
               time: session.time,
               venue: session.venue,
-              lecturer: Array.from(session.lecturers).join(', '),
-              activityType: session.activityType
+              lecturer: Array.from(session.lecturers).join(', ')
             }))
             .sort((a, b) => {
               const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];

@@ -220,15 +220,41 @@
 }
 
 .occurrence-number {
-  position: absolute;
-  left: 1.1rem;
-  top: 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tag-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.occurrence-number span {
+  font-size: 0.8rem;
+  font-weight: 500;
   color: #14b8a6;
   background: rgba(20, 184, 166, 0.1);
-  padding: 0.25rem 0.5rem;
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  transition: all 0.2s ease;
+}
+
+.occurrence-number .activity-type {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  transition: all 0.2s ease;
 }
 
 .occurrence-item {
@@ -236,7 +262,6 @@
   border: 1px solid rgba(20, 184, 166, 0.1);
   border-radius: 8px;
   padding: 1rem;
-  padding-top: 2.5rem;
   position: relative;
   margin-bottom: 0.75rem;
 }
@@ -259,22 +284,21 @@
 .occurrence-time {
   display: flex;
   align-items: center;
-  color: #e2e8f0;
   font-size: 0.85rem;
   font-weight: 500;
   padding: 0.25rem 0;
   min-height: 24px;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  color: #ffffff;
 }
 
 .occurrence-time svg {
   color: #ffffff;
   font-size: 0.85rem;
   width: 16px;
-  margin-right: 0.75rem;
+  height: 16px;
   flex-shrink: 0;
-  position: relative;
-  left: 2px;
+  margin-top: 2px;
 }
 
 .activity-type {
@@ -292,45 +316,54 @@
 .occurrence-details {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
+  gap: 0.75rem;
+  margin-top: 0rem;
 }
 
 .occurrence-details .detail-row {
   display: flex;
-  align-items: flex-start;
-  padding: 0.25rem 0;
-  position: relative;
+  align-items: center;
+  gap: 0.5rem;
   min-height: 24px;
+  color: #94a3b8;
 }
 
 .occurrence-details .detail-row svg {
-  color: #ffffff;
+  color: #94a3b8;
   font-size: 0.85rem;
   width: 16px;
-  margin-right: 0.75rem;
+  height: 16px;
   flex-shrink: 0;
-  position: relative;
-  left: 2px;
+  margin-top: 2px;
 }
 
 .occurrence-details .detail-text {
-  color: #dddddd;
+  color: #94a3b8;
   font-size: 0.85rem;
   font-weight: 400;
-  white-space: normal;
-  word-wrap: break-word;
   line-height: 1.4;
   flex: 1;
   min-width: 0;
-  padding-right: 8px;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding-top: 2px;
 }
 
 /* For the timetable blocks */
 .course-block .activity-type {
-  margin-top: 0.25rem;
-  margin-left: 0.25rem;
   font-size: 0.7rem;
+  background: rgba(20, 184, 166, 0.15);
+  color: #14b8a6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  margin-left: 4px;
 }
 
 .course-block .detail-text {
@@ -549,16 +582,16 @@
 
 .tags-container {
   display: flex;
-  gap: 0.25rem;
   align-items: center;
+  gap: 4px;
 }
 
 .occ-tag {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.8);
-  padding: 0.1rem 0.3rem;
-  border-radius: 3px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
   font-weight: 500;
 }
 
@@ -700,65 +733,56 @@
   transition: all 0.5s ease;
 }
 
-.add-occurrence-btn {
-  position: absolute;
-  top: 1rem;
-  right: 0.75rem;
-  background: rgba(20, 184, 166, 0.1);
-  color: #14b8a6;
-  padding: 0.25rem 0.5rem;
+.add-occurrence-btn,
+.remove-occurrence-btn {
+  position: static;
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.3rem;
   cursor: pointer;
-  border: none;
+  border: 1px solid;
   outline: none;
+  transition: all 0.2s ease;
+  margin-left: auto;
+  height: 24px;
 }
 
-.add-occurrence-btn:focus {
-  outline: none;
+.add-occurrence-btn {
+  background: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
+  border-color: rgba(20, 184, 166, 0.2);
 }
 
 .add-occurrence-btn:hover {
-  background: rgba(20, 184, 166, 0.2);
-}
-
-.add-occurrence-btn:active {
-  transform: translateY(0);
+  background: rgba(20, 184, 166, 0.15);
+  border-color: rgba(20, 184, 166, 0.3);
 }
 
 .remove-occurrence-btn {
-  position: absolute;
-  top: 1rem;
-  right: 0.75rem;
   background: rgba(239, 68, 68, 0.1);
   color: rgb(239, 68, 68);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  cursor: pointer;
-  border: none;
-  outline: none;
-  transition: all 0.2s ease;
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 .remove-occurrence-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .add-occurrence-btn:disabled {
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.1);
   cursor: not-allowed;
 }
 
-.add-occurrence-btn:disabled:hover {
-  background: rgba(255, 255, 255, 0.05);
+.add-occurrence-btn svg,
+.remove-occurrence-btn svg {
+  font-size: 0.8rem;
 }
 
 /* Responsive adjustments */

@@ -172,7 +172,7 @@ export const Timetable = () => {
           venue: session.venue || 'No venue specified',
           lecturer: session.lecturer || 'No lecturer specified',
           day: session.day,
-          activityType: session.activityType
+          activityType: occurrence.activityType
         };
 
         setTimetableOccurrences(prev => ({
@@ -399,7 +399,38 @@ export const Timetable = () => {
                   <div className="course-occurrences">
                     {course.occurrences.map((occurrence) => (
                       <div key={occurrence.occurrenceNumber} className="occurrence-item">
-                        <span className="occurrence-number">Occurrence {occurrence.occurrenceNumber}</span>
+                        <div className="occurrence-number">
+                          <div className="tag-group">
+                            <span>Occurrence {occurrence.occurrenceNumber}</span>
+                            {occurrence.activityType && (
+                              <span className="activity-type">{occurrence.activityType}</span>
+                            )}
+                          </div>
+                          {addedOccurrences[course.id] === occurrence.occurrenceNumber ? (
+                            <button 
+                              className="remove-occurrence-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveOccurrence(course.id, occurrence.occurrenceNumber);
+                              }}
+                            >
+                              <FaTrash size={12} />
+                              Remove
+                            </button>
+                          ) : (
+                            <button 
+                              className="add-occurrence-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddOccurrence(course.id, occurrence, course.name);
+                              }}
+                              disabled={addedOccurrences[course.id] !== undefined && addedOccurrences[course.id] !== null}
+                            >
+                              <FaPlus size={12} />
+                              Add
+                            </button>
+                          )}
+                        </div>
                         
                         {/* Display all sessions for this occurrence */}
                         {occurrence.sessions.map((session, sessionIndex) => (
@@ -412,9 +443,6 @@ export const Timetable = () => {
                                 </>
                               ) : (
                                 <span className="incomplete-details">{session.day}</span>
-                              )}
-                              {session.activityType && (
-                                <span className="activity-type">{session.activityType}</span>
                               )}
                             </div>
                             <div className="occurrence-details">
@@ -429,31 +457,6 @@ export const Timetable = () => {
                             </div>
                           </div>
                         ))}
-                        
-                        {addedOccurrences[course.id] === occurrence.occurrenceNumber ? (
-                          <button 
-                            className="remove-occurrence-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveOccurrence(course.id, occurrence.occurrenceNumber);
-                            }}
-                          >
-                            <FaTrash size={12} />
-                            Remove
-                          </button>
-                        ) : (
-                          <button 
-                            className="add-occurrence-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddOccurrence(course.id, occurrence, course.name);
-                            }}
-                            disabled={addedOccurrences[course.id] !== undefined && addedOccurrences[course.id] !== null}
-                          >
-                            <FaPlus size={12} />
-                            Add
-                          </button>
-                        )}
                       </div>
                     ))}
                   </div>
