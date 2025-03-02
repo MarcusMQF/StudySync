@@ -64,11 +64,14 @@ export const parseExcelFile = async (file: File): Promise<Course[]> => {
             courses[courseId].occurrences.push(occurrence);
           }
 
+          // Handle venue - for ONL activity type, all sessions in this occurrence should be Online
+          let venue = occurrence.activityType === 'ONL' ? 'Online' : (row['Room']?.toString().trim() || '');
+          
           // Create new session
           const session: CourseSession = {
             day,
             time,
-            venue: row['Room']?.toString().trim() || '',
+            venue,
             lecturer: row['Tutor']?.toString().trim() || ''
           };
 
@@ -350,13 +353,88 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     
-    const rawData = XLSX.utils.sheet_to_json(worksheet);
-    console.log("Raw data rows:", rawData.length);
+    // Get worksheet range
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+    console.log('Worksheet range:', {
+      startRow: range.s.r,
+      endRow: range.e.r,
+      startCol: range.s.c,
+      endCol: range.e.c,
+      totalRows: range.e.r - range.s.r + 1
+    });
 
-    // Log raw data for GBT0002
-    console.log("Raw data for GBT0002:", rawData.filter((row: any) => 
-      row['Module Code']?.toString().trim() === 'GBT0002'
-    ));
+    // First get the raw data without any merging
+    const rawData = XLSX.utils.sheet_to_json(worksheet, {
+      raw: true,
+      defval: '',  // Use empty string for empty cells
+      blankrows: false,
+      header: 1  // Get array format first
+    }) as any[][];
+
+    // Get headers and validate
+    const headers = rawData[0];
+    console.log('Found headers:', headers);
+
+    const columnIndexes = {
+      moduleCode: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Module Code'),
+      moduleName: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Module Name'),
+      occurrence: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Occurrence'),
+      activity: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Activity'),
+      dayTime: headers.findIndex((h: string) => typeof h === 'string' && h.trim().replace(/\s+$/, '') === 'Day / Start Duration'),
+      tutor: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Tutor'),
+      room: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Room'),
+      location: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Location')
+    };
+
+    // Log the actual headers for debugging
+    console.log('Header debug:', {
+      headers,
+      dayTimeColumn: headers[columnIndexes.dayTime],
+      dayTimeIndex: columnIndexes.dayTime
+    });
+
+    // Validate column indexes
+    console.log('Column indexes:', columnIndexes);
+    if (columnIndexes.moduleCode === -1) {
+      console.error('Could not find Module Code column');
+      throw new Error('Required column "Module Code" not found');
+    }
+
+    // Convert array data to objects with strict typing
+    let lastValidModuleCode = '';
+    let lastValidModuleName = '';
+    const jsonData = rawData.slice(1).map(row => {
+      const moduleCode = row[columnIndexes.moduleCode]?.toString().trim();
+      const moduleName = row[columnIndexes.moduleName]?.toString().trim();
+
+      // If this row has a module code, update our last valid values
+      if (moduleCode) {
+        lastValidModuleCode = moduleCode;
+        lastValidModuleName = moduleName || lastValidModuleName;
+      }
+
+      // Use either the current row's values or the last valid values
+      return {
+        'Module Code': moduleCode || lastValidModuleCode,
+        'Module Name': moduleName || lastValidModuleName,
+        'Occurrence': row[columnIndexes.occurrence]?.toString().trim(),
+        'Activity': row[columnIndexes.activity]?.toString().trim(),
+        'Day / Start Duration': row[columnIndexes.dayTime]?.toString().trim(),
+        'Tutor': row[columnIndexes.tutor]?.toString().trim(),
+        'Room': row[columnIndexes.room]?.toString().trim(),
+        'Location': row[columnIndexes.location]?.toString().trim()
+      };
+    });
+
+    // Log total rows
+    console.log('Total rows processed:', jsonData.length);
+
+    // Debug log for GBB0046
+    const gbb0046Rows = jsonData.filter(row => row['Module Code'] === 'GBB0046');
+    console.log("GBB0046 raw rows:", {
+      totalRows: gbb0046Rows.length,
+      rows: gbb0046Rows
+    });
 
     // First pass: Group all data by course ID
     const courseMap = new Map<string, {
@@ -373,77 +451,68 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
     }>();
 
     // Process each row
-    rawData.forEach((row: any) => {
-      if (!row['Module Code'] || !row['Module Name']) return;
+    jsonData.forEach((row, index) => {
+      const courseId = row['Module Code'];
+      const courseName = row['Module Name'] || '';
+      const occurrenceStr = row['Occurrence'] || '1';
+      const activityType = row['Activity']?.toUpperCase() || 'LEC';
+      const dayTimeInfo = row['Day / Start Duration'];
       
-      const courseId = row['Module Code'].toString().trim();
-      const courseName = row['Module Name'].toString().trim();
-      const occurrenceStr = (row['Occurrence'] || '').toString().trim() || '1';
-      const activityType = row['Activity']?.toString().trim() || '';
-      
-      // Handle venue
-      let venue = row['Room']?.toString().trim() || '';
-      if (activityType.toUpperCase().includes('ONLINE') || activityType.toUpperCase() === 'ONL') {
-        venue = 'Online';
+      // Log each row being processed for GBB0046
+      if (courseId === 'GBB0046') {
+        console.log(`Processing GBB0046 row ${index}:`, {
+          occurrence: occurrenceStr,
+          activity: activityType,
+          dayTime: dayTimeInfo,
+          tutor: row['Tutor'],
+          room: row['Room']
+        });
       }
-      
+
       // Parse day and time
-      const dayTimeInfo = row['Day / Start Duration '] || row['Day/Start Duration'] || row['Day / Start Duration'] || row['Day/Start'] || row['Day / Start'];
       let day = '';
       let time = '';
       
-      if (dayTimeInfo && dayTimeInfo !== '- ()') {
-        const dayTimeStr = dayTimeInfo.toString();
+      if (dayTimeInfo) {
+        // First try exact format from Excel (e.g., "THURSDAY 14:00 - 16:00 (02:00)")
+        const fullPattern = /^(MON|TUE|WED|THU|FRI|MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/i;
+        const match = dayTimeInfo.match(fullPattern);
         
-        // Try different patterns to match day and time
-        const patterns = [
-          /^(MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/i,
-          /^(MON|TUE|WED|THU|FRI|MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY)\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/i,
-          {
-            day: /(MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|MON|TUE|WED|THU|FRI)/i,
-            time: /(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/
+        if (match) {
+          day = match[1].toUpperCase()
+            .replace(/^MON$/, 'MONDAY')
+            .replace(/^TUE$/, 'TUESDAY')
+            .replace(/^WED$/, 'WEDNESDAY')
+            .replace(/^THU$/, 'THURSDAY')
+            .replace(/^FRI$/, 'FRIDAY');
+          time = `${match[2]} - ${match[3]}`;
+        } else {
+          // Fallback to separate day and time matching
+          const dayMatch = dayTimeInfo.match(/^(MON|TUE|WED|THU|FRI|MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY)/i);
+          const timeMatch = dayTimeInfo.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+          
+          if (dayMatch) {
+            day = dayMatch[1].toUpperCase()
+              .replace(/^MON$/, 'MONDAY')
+              .replace(/^TUE$/, 'TUESDAY')
+              .replace(/^WED$/, 'WEDNESDAY')
+              .replace(/^THU$/, 'THURSDAY')
+              .replace(/^FRI$/, 'FRIDAY');
           }
-        ];
-
-        // Try each pattern until we find a match
-        for (const pattern of patterns) {
-          if (pattern instanceof RegExp) {
-            const match = dayTimeStr.match(pattern);
-            if (match) {
-              day = match[1].toUpperCase();
-              day = day.replace(/^MON$/, 'MONDAY')
-                      .replace(/^TUE$/, 'TUESDAY')
-                      .replace(/^WED$/, 'WEDNESDAY')
-                      .replace(/^THU$/, 'THURSDAY')
-                      .replace(/^FRI$/, 'FRIDAY');
-              time = `${match[2]} - ${match[3]}`;
-              break;
-            }
-          } else {
-            const dayMatch = dayTimeStr.match(pattern.day);
-            const timeMatch = dayTimeStr.match(pattern.time);
-            if (dayMatch && timeMatch) {
-              day = dayMatch[1].toUpperCase();
-              day = day.replace(/^MON$/, 'MONDAY')
-                      .replace(/^TUE$/, 'TUESDAY')
-                      .replace(/^WED$/, 'WEDNESDAY')
-                      .replace(/^THU$/, 'THURSDAY')
-                      .replace(/^FRI$/, 'FRIDAY');
-              time = `${timeMatch[1]} - ${timeMatch[2]}`;
-              break;
-            }
+          
+          if (timeMatch) {
+            time = `${timeMatch[1]} - ${timeMatch[2]}`;
           }
         }
-      }
 
-      // Handle lecturers - split by both comma and newline
-      const lecturers = new Set<string>(
-        (row['Tutor'] || '')
-          .toString()
-          .split(/[,\n]/)
-          .map((l: string) => l.trim())
-          .filter((l: string): l is string => Boolean(l && l !== '-'))
-      );
+        if (courseId === 'GBB0046') {
+          console.log(`Parsed day/time for GBB0046:`, {
+            original: dayTimeInfo,
+            parsedDay: day,
+            parsedTime: time
+          });
+        }
+      }
 
       // Get or create course
       if (!courseMap.has(courseId)) {
@@ -454,23 +523,76 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
       }
       const course = courseMap.get(courseId)!;
 
-      // Get or create occurrence with activity type
+      // Get or create occurrence
       if (!course.occurrences.has(occurrenceStr)) {
         course.occurrences.set(occurrenceStr, {
           sessions: [],
-          activityType: activityType.toUpperCase() || 'LEC'  // Default to LEC if not specified
+          activityType
         });
       }
       const occurrence = course.occurrences.get(occurrenceStr)!;
 
-      // Create session with appropriate information
-      occurrence.sessions.push({
-        day: day && time ? day : 'No day and time specified',
-        time: day && time ? time : '',
+      // Handle venue - for ONL activity type, all sessions in this occurrence should be Online
+      let venue = occurrence.activityType === 'ONL' ? 'Online' : (row['Room']?.toString().trim() || '');
+      
+      // Create new session regardless of day/time presence
+      const session = {
+        day: day || '',  // Empty string if no day
+        time: time || '', // Empty string if no time
         venue,
-        lecturers
-      });
+        lecturers: new Set<string>()
+      };
+
+      // Add lecturer if present
+      if (row['Tutor']) {
+        const lecturers = row['Tutor']
+          .split(/[,\n\r]+/)
+          .map((l: string) => l.trim())
+          .filter((l: string) => l && l !== '-');
+        
+        lecturers.forEach((l: string) => session.lecturers.add(l));
+      }
+
+      // Check if this exact session already exists
+      const sessionExists = occurrence.sessions.some(existingSession =>
+        existingSession.day === session.day &&
+        existingSession.time === session.time &&
+        existingSession.venue === session.venue
+      );
+
+      if (!sessionExists) {
+        occurrence.sessions.push(session);
+        if (courseId === 'GBB0046') {
+          console.log(`Added new session for GBB0046:`, {
+            occurrence: occurrenceStr,
+            session: {
+              day: session.day,
+              time: session.time,
+              venue: session.venue,
+              lecturers: Array.from(session.lecturers)
+            }
+          });
+        }
+      }
     });
+
+    // Debug log for GBB0046 after processing
+    const gbb0046 = courseMap.get('GBB0046');
+    if (gbb0046) {
+      console.log('GBB0046 final processed data:', JSON.stringify({
+        name: gbb0046.name,
+        occurrences: Array.from(gbb0046.occurrences.entries()).map(([occNum, occ]) => ({
+          number: occNum,
+          activityType: occ.activityType,
+          sessions: occ.sessions.map(session => ({
+            day: session.day,
+            time: session.time,
+            venue: session.venue,
+            lecturers: Array.from(session.lecturers)
+          }))
+        }))
+      }, null, 2));
+    }
 
     // Convert to final format
     const courses: Course[] = Array.from(courseMap.entries()).map(([courseId, courseData]) => ({
@@ -479,7 +601,7 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
       occurrences: Array.from(courseData.occurrences.entries())
         .map(([occNumber, occData]) => ({
           occurrenceNumber: occNumber,
-          activityType: occData.activityType || 'LEC',  // Ensure activityType is always present
+          activityType: occData.activityType,
           sessions: occData.sessions
             .map(session => ({
               day: session.day,
@@ -498,27 +620,12 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
         .sort((a, b) => a.occurrenceNumber.localeCompare(b.occurrenceNumber))
     }));
 
-    // Before returning courses, log details for GBT0002
-    const gbt0002 = courses.find(c => c.id === 'GBT0002');
-    if (gbt0002) {
-      console.log("GBT0002 details:", {
-        name: gbt0002.name,
-        occurrences: gbt0002.occurrences.map(occ => ({
-          number: occ.occurrenceNumber,
-          sessionCount: occ.sessions.length,
-          sessions: occ.sessions
-        }))
-      });
-    } else {
-      console.log("GBT0002 not found in processed courses");
-    }
-
-    console.log("Total unique courses:", courses.length);
-    console.log("Sample course occurrences:", 
-      courses.length > 0 ? 
-        `${courses[0].id} has ${courses[0].occurrences.length} occurrences` : 
-        "No courses found"
-    );
+    // Log summary of all courses
+    console.log('Course summary:', courses.map(course => ({
+      id: course.id,
+      occurrences: course.occurrences.length,
+      totalSessions: course.occurrences.reduce((sum, occ) => sum + occ.sessions.length, 0)
+    })));
 
     if (courses.length === 0) {
       console.warn("No courses were processed, falling back to sample data");

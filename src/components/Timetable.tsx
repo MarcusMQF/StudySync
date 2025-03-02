@@ -442,7 +442,7 @@ export const Timetable = () => {
                                   {session.day}, {session.time}
                                 </>
                               ) : (
-                                <span className="incomplete-details">{session.day}</span>
+                                <span className="incomplete-details">{session.day || 'No day and time specified'}</span>
                               )}
                             </div>
                             <div className="occurrence-details">
