@@ -332,8 +332,6 @@ export const parseStaticExcelData = (data: ArrayBuffer): Course[] => {
 // Function to load the Excel data from a static file
 export const loadExcelData = async (): Promise<Course[]> => {
   try {
-    console.log("Attempting to load Excel file...");
-    
     // Use the improved loadCoursesFromExcel function
     const courses = await loadCoursesFromExcel();
     
@@ -343,7 +341,6 @@ export const loadExcelData = async (): Promise<Course[]> => {
       return getSampleCourses();
     }
     
-    console.log(`Loaded ${courses.length} courses from Excel file`);
     return courses;
   } catch (error) {
     console.error("Error loading Excel data:", error);
@@ -428,29 +425,20 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
   try {
     console.log("Starting to load Excel file...");
     const response = await fetch('./STU_MVT4.xls');
-    console.log("Fetch response status:", response.status);
     
     if (!response.ok) {
-      console.error("Failed to fetch Excel file:", response.statusText);
       throw new Error(`Failed to fetch Excel file: ${response.statusText}`);
     }
     
     const data = await response.arrayBuffer();
-    console.log("Excel file loaded, size:", data.byteLength, "bytes");
-    
     const workbook = XLSX.read(data, { type: 'array' });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     
     // Get worksheet range
     const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-    console.log('Worksheet range:', {
-      startRow: range.s.r,
-      endRow: range.e.r,
-      startCol: range.s.c,
-      endCol: range.e.c,
-      totalRows: range.e.r - range.s.r + 1
-    });
+    const totalRows = range.e.r - range.s.r + 1;
+    console.log(`Processing ${totalRows} rows from Excel file...`);
 
     // First get the raw data without any merging
     const rawData = XLSX.utils.sheet_to_json(worksheet, {
@@ -462,8 +450,6 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
 
     // Get headers and validate
     const headers = rawData[0];
-    console.log('Found headers:', headers);
-
     const columnIndexes = {
       moduleCode: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Module Code'),
       moduleName: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Module Name'),
@@ -475,17 +461,8 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
       location: headers.findIndex((h: string) => typeof h === 'string' && h.trim() === 'Location')
     };
 
-    // Log the actual headers for debugging
-    console.log('Header debug:', {
-      headers,
-      dayTimeColumn: headers[columnIndexes.dayTime],
-      dayTimeIndex: columnIndexes.dayTime
-    });
-
     // Validate column indexes
-    console.log('Column indexes:', columnIndexes);
     if (columnIndexes.moduleCode === -1) {
-      console.error('Could not find Module Code column');
       throw new Error('Required column "Module Code" not found');
     }
 
@@ -513,16 +490,6 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
         'Room': row[columnIndexes.room]?.toString().trim(),
         'Location': row[columnIndexes.location]?.toString().trim()
       };
-    });
-
-    // Log total rows
-    console.log('Total rows processed:', jsonData.length);
-
-    // Debug log for GBB0046
-    const gbb0046Rows = jsonData.filter(row => row['Module Code'] === 'GBB0046');
-    console.log("GBB0046 raw rows:", {
-      totalRows: gbb0046Rows.length,
-      rows: gbb0046Rows
     });
 
     // Process data into course format
@@ -609,33 +576,37 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
 
       // If we have day/time in this row, create or update a session
       if (day && time) {
+        // Find existing session with same occurrence, day, and time
         const existingSessionIndex = occurrence.sessions.findIndex(s => 
           s.day === day && 
           s.time === time
         );
 
         if (existingSessionIndex !== -1) {
-          // Add new lecturers to existing session
+          // Get the existing session
           const existingSession = occurrence.sessions[existingSessionIndex];
-          const existingLecturers = new Set(existingSession.lecturer.split(', ').filter(Boolean));
-          lecturerList.forEach(l => existingLecturers.add(l));
-          occurrence.sessions[existingSessionIndex] = {
-            ...existingSession,
-            lecturer: Array.from(existingLecturers).join(', ')
-          };
+          
+          if (lecturerList.length > 0) {
+            // Get existing lecturers as a Set
+            const existingLecturers = new Set(
+              existingSession.lecturer
+                .split(/[,\n\r]+/)
+                .map(l => l.trim())
+                .filter(l => l && l !== '-')
+            );
+            
+            // Add new lecturers to the set
+            lecturerList.forEach((l: string) => existingLecturers.add(l));
 
-          // Debug log for GQM0079
-          if (courseId === 'GQM0079') {
-            console.log('Updated session with day/time:', {
-              day,
-              time,
-              existingLecturers: existingSession.lecturer,
-              newLecturers: lecturerList,
-              combined: Array.from(existingLecturers)
-            });
+            // Update the session while preserving existing data
+            occurrence.sessions[existingSessionIndex] = {
+              ...existingSession,           // Preserve all existing session data
+              venue: venue,                 // Update venue if needed
+              lecturer: Array.from(existingLecturers).sort().join(', ') // Update with combined lecturers
+            };
           }
         } else {
-          // Create new session
+          // Create new session regardless of whether there are lecturers
           const newSession: CourseSession = {
             day,
             time,
@@ -643,18 +614,9 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
             lecturer: lecturerList.join(', ')
           };
           occurrence.sessions.push(newSession);
-
-          // Debug log for GQM0079
-          if (courseId === 'GQM0079') {
-            console.log('Created new session:', {
-              day,
-              time,
-              lecturers: lecturerList
-            });
-          }
         }
-      } else if (lecturerList.length > 0 && lastValidDay && lastValidTime) {
-        // If we have lecturers but no day/time, add them to the last valid session
+      } else if (lecturerList.length > 0 && lastValidDay && lastValidTime && occurrenceStr === lastValidOccurrence) {
+        // If we have lecturers but no day/time, add them to the last valid session IN THE SAME OCCURRENCE
         const existingSessionIndex = occurrence.sessions.findIndex(s => 
           s.day === lastValidDay && 
           s.time === lastValidTime
@@ -666,58 +628,11 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
           lecturerList.forEach(l => existingLecturers.add(l));
           occurrence.sessions[existingSessionIndex] = {
             ...existingSession,
-            lecturer: Array.from(existingLecturers).join(', ')
+            lecturer: Array.from(existingLecturers).sort().join(', ')
           };
-
-          // Debug log for GQM0079
-          if (courseId === 'GQM0079') {
-            console.log('Added lecturers to last valid session:', {
-              day: lastValidDay,
-              time: lastValidTime,
-              existingLecturers: existingSession.lecturer,
-              newLecturers: lecturerList,
-              combined: Array.from(existingLecturers)
-            });
-          }
         }
       }
     });
-
-    // Debug log for GBB0046 after processing
-    const gbb0046 = courseMap.get('GBB0046');
-    if (gbb0046) {
-      console.log('GBB0046 final processed data:', JSON.stringify({
-        name: gbb0046.name,
-        occurrences: Array.from(gbb0046.occurrences.entries()).map(([occNum, occ]) => ({
-          number: occNum,
-          activityType: occ.activityType,
-          sessions: occ.sessions.map(session => ({
-            day: session.day,
-            time: session.time,
-            venue: session.venue,
-            tutor: session.lecturer
-          }))
-        }))
-      }, null, 2));
-    }
-
-    // Debug log for GQM0079 after processing
-    const gqm0079 = courseMap.get('GQM0079');
-    if (gqm0079) {
-      console.log('GQM0079 final processed data:', JSON.stringify({
-        name: gqm0079.name,
-        occurrences: Array.from(gqm0079.occurrences.entries()).map(([occNum, occ]) => ({
-          number: occNum,
-          activityType: occ.activityType,
-          sessions: occ.sessions.map(session => ({
-            day: session.day,
-            time: session.time,
-            venue: session.venue,
-            tutor: session.lecturer
-          }))
-        }))
-      }, null, 2));
-    }
 
     // Convert to final format
     const courses: Course[] = Array.from(courseMap.entries()).map(([courseId, courseData]) => ({
@@ -760,6 +675,13 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
         )
       )
     );
+
+    console.log('Excel processing summary:', {
+      totalRowsProcessed: jsonData.length,
+      totalCoursesInExcel: courses.length,
+      validCoursesCount: validCourses.length,
+      invalidCoursesCount: courses.length - validCourses.length
+    });
 
     if (validCourses.length === 0) {
       console.warn("No valid courses were processed, falling back to sample data");
