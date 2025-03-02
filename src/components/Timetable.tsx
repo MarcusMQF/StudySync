@@ -452,7 +452,11 @@ export const Timetable = () => {
                               </div>
                               <div className="detail-row">
                                 <FaUser size={12} style={{ marginRight: '4px' }} />
-                                <span className="detail-text">{session.lecturer || 'No lecturer specified'}</span>
+                                <span className="detail-text" style={{ 
+                                  whiteSpace: 'pre-wrap',
+                                  wordBreak: 'break-word',
+                                  display: 'block'
+                                }}>{session.lecturer || 'No lecturer specified'}</span>
                               </div>
                             </div>
                           </div>
@@ -532,7 +536,11 @@ export const Timetable = () => {
                           <div className="course-details">
                             <div className="detail-row">
                               <FaUser className="detail-icon" />
-                              <span className="detail-text">{occurrence.lecturer}</span>
+                              <span className="detail-text" style={{ 
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word',
+                                display: 'block'
+                              }}>{occurrence.lecturer}</span>
                             </div>
                             {blockHeight > 70 && (
                               <div className="detail-row">
