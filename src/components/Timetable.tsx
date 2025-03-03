@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo } from 'react-icons/fa';
+import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo, FaExclamationTriangle } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import './Timetable.css';
 import DecryptedText from './DecryptedText';
@@ -43,6 +43,80 @@ const generateCourseColor = (courseCode: string) => {
   return colors[index];
 };
 
+// Add these helper functions before the Timetable component
+const parseTime = (timeStr: string): number => {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+const checkTimeOverlap = (time1Start: string, time1End: string, time2Start: string, time2End: string): boolean => {
+  const start1 = parseTime(time1Start);
+  const end1 = parseTime(time1End);
+  const start2 = parseTime(time2Start);
+  const end2 = parseTime(time2End);
+
+  return (start1 < end2 && end1 > start2);
+};
+
+const hasTimeConflict = (
+  newSession: { day: string; time: string },
+  existingOccurrences: { [key: string]: ITimetableOccurrence[] },
+): boolean => {
+  const [newStartTime, newEndTime] = newSession.time.split(' - ');
+  const dayOccurrences = existingOccurrences[newSession.day] || [];
+
+  return dayOccurrences.some(occurrence => {
+    const [existingStartTime, existingEndTime] = occurrence.time.split(' - ');
+    return checkTimeOverlap(newStartTime, newEndTime, existingStartTime, existingEndTime);
+  });
+};
+
+// Add WarningModal interface before the Timetable component
+interface WarningModalProps {
+  conflicts: Array<{
+    day: string;
+    time: string;
+  }>;
+  onClose: () => void;
+}
+
+// Add WarningModal component before the Timetable component
+const WarningModal: React.FC<WarningModalProps> = ({ conflicts, onClose }) => {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 300); // Match this with CSS animation duration
+  };
+
+  return (
+    <div className={`modal-overlay ${isClosing ? 'modal-closing' : ''}`}>
+      <div className={`warning-modal ${isClosing ? 'warning-modal-closing' : ''}`}>
+        <div className="warning-header">
+          <FaExclamationTriangle className="warning-icon" />
+          <h3 className="warning-title">Time Conflict Detected</h3>
+        </div>
+        <div className="warning-content">
+          <p>Unable to add this occurrence due to time conflicts on the following day and time:</p>
+          <div className="conflict-days">
+            {conflicts.map((conflict, index) => (
+              <div key={index}>
+                {conflict.day} : {conflict.time}
+              </div>
+            ))}
+          </div>
+          <p>Please choose a different occurrence or remove conflicting courses first.</p>
+        </div>
+        <div className="warning-actions">
+          <button className="warning-button primary" onClick={handleClose}>
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const Timetable = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Course[]>([]);
@@ -58,6 +132,8 @@ export const Timetable = () => {
   const [courseColors, setCourseColors] = useState<{[courseId: string]: {bg: string, border: string}}>({});
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showWarning, setShowWarning] = useState(false);
+  const [conflicts, setConflicts] = useState<Array<{ day: string; time: string }>>([]);
 
   // Load courses from Excel file
   useEffect(() => {
@@ -145,7 +221,42 @@ export const Timetable = () => {
   };
 
   const handleAddOccurrence = (courseId: string, occurrence: CourseOccurrence, occurrenceIndex: number, courseName: string) => {
-    // Process each session in the occurrence
+    // Check for conflicts before adding
+    let hasConflicts = false;
+    const conflictInfo: Array<{ day: string; time: string }> = [];
+
+    // Check each session in the occurrence for conflicts
+    occurrence.sessions.forEach(session => {
+      const standardizedDay = session.day.toUpperCase();
+      if (hasTimeConflict(
+        { day: standardizedDay, time: session.time },
+        timetableOccurrences
+      )) {
+        hasConflicts = true;
+        // Find the conflicting sessions
+        const dayOccurrences = timetableOccurrences[standardizedDay] || [];
+        const [newStartTime, newEndTime] = session.time.split(' - ');
+        
+        dayOccurrences.forEach(existingOcc => {
+          const [existingStartTime, existingEndTime] = existingOcc.time.split(' - ');
+          if (checkTimeOverlap(newStartTime, newEndTime, existingStartTime, existingEndTime)) {
+            conflictInfo.push({
+              day: session.day,
+              time: existingOcc.time
+            });
+          }
+        });
+      }
+    });
+
+    if (hasConflicts) {
+      // Show warning modal with conflict details
+      setConflicts(conflictInfo);
+      setShowWarning(true);
+      return;
+    }
+
+    // If no conflicts, proceed with adding the occurrence
     occurrence.sessions.forEach(session => {
       const standardizedDay = session.day.toUpperCase();
       
@@ -161,42 +272,24 @@ export const Timetable = () => {
         activityType: occurrence.activityType
       };
 
-      // Update timetable occurrences
       setTimetableOccurrences(prev => {
         const dayOccurrences = [...(prev[standardizedDay] || [])];
-        
-        // Find if there's an existing occurrence
-        const existingIndex = dayOccurrences.findIndex(
-          occ => occ.courseId === courseId && 
-                occ.time === session.time && 
-                occ.occurrenceNumber === occurrence.occurrenceNumber
-        );
-        
-        if (existingIndex !== -1) {
-          // Replace existing occurrence
-          dayOccurrences[existingIndex] = newOccurrence;
-        } else {
-          // Add new occurrence
-          dayOccurrences.push(newOccurrence);
-        }
+        dayOccurrences.push(newOccurrence);
         
         return {
           ...prev,
           [standardizedDay]: dayOccurrences.sort((a, b) => {
-            // Sort by time first
             const timeA = a.time.split(' - ')[0];
             const timeB = b.time.split(' - ')[0];
             const timeCompare = timeA.localeCompare(timeB);
             if (timeCompare !== 0) return timeCompare;
-            
-            // Then by course ID
             return a.courseId.localeCompare(b.courseId);
           })
         };
       });
     });
 
-    // Track added occurrence using the occurrence number from the data
+    // Track added occurrence
     setAddedOccurrences(prev => ({
       ...prev,
       [courseId]: occurrenceIndex.toString()
@@ -319,6 +412,14 @@ export const Timetable = () => {
 
   return (
     <div className="timetable-container">
+      {/* Add warning modal */}
+      {showWarning && (
+        <WarningModal
+          conflicts={conflicts}
+          onClose={() => setShowWarning(false)}
+        />
+      )}
+      
       <div className="timetable-header">
         <h1 className="title-container">
           <DecryptedText 
