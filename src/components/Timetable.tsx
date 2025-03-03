@@ -680,6 +680,10 @@ export const Timetable = () => {
           </div>
         </div>
       </div>
+
+      <div className="footer-credit">
+        Made by <a href="https://www.linkedin.com/in/mah-qing-fung/" target="_blank" rel="noopener noreferrer">Marcus</a>
+      </div>
     </div>
   );
 };
