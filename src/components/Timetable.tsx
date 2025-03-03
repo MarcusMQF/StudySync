@@ -1,25 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import './Timetable.css';
 import DecryptedText from './DecryptedText';
 import { loadExcelData } from '../utils/excelParser';
-import { Course, CourseOccurrence } from '../types/course';
-
-interface TimetableOccurrence {
-  courseId: string;
-  courseName: string;
-  courseCode: string;
-  occurrenceNumber: string;
-  time: string;
-  venue: string;
-  lecturer: string;
-  day: string;
-  activityType?: string;
-}
+import { Course, CourseOccurrence, TimetableOccurrence as ITimetableOccurrence } from '../types/course';
 
 type TimetableOccurrences = {
-  [key: string]: TimetableOccurrence[];
+  [key: string]: ITimetableOccurrence[];
 };
 
 // Add this function to generate consistent colors for courses
@@ -90,15 +78,16 @@ export const Timetable = () => {
   }, []);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-  const timeSlots = Array.from({ length: 10 }, (_, i) => {
+  const timeSlots = Array.from({ length: 11 }, (_, i) => {
     const hour = i + 8;
     return `${hour < 10 ? '0' : ''}${hour}:00`;
   });
 
   const calculateTimePosition = (time: string): number => {
     const [hours, minutes] = time.split(':').map(Number);
-    // Precise calculation with 0.5px offset for perfect alignment
-    return Math.round((hours - 8) * 100 + (minutes / 60) * 100);
+    const hourPixels = (hours - 8) * 140; // Each hour is 90px
+    const minutePixels = (minutes / 60) * 140; // Convert minutes to pixels proportionally
+    return hourPixels + minutePixels;
   };
   
   const calculateBlockHeight = (startTime: string, endTime: string): number => {
@@ -108,10 +97,7 @@ export const Timetable = () => {
     const startTotalMinutes = startHours * 60 + startMinutes;
     const endTotalMinutes = endHours * 60 + endMinutes;
     
-    // Precise height calculation with slight adjustment for borders
-    const heightInPixels = Math.round((endTotalMinutes - startTotalMinutes) * (100 / 60));
-    
-    return Math.max(heightInPixels, 30);
+    return ((endTotalMinutes - startTotalMinutes) / 60) * 140; // Convert duration to pixels (90px per hour)
   };
 
   // Handle search
@@ -158,52 +144,87 @@ export const Timetable = () => {
     );
   };
 
-  const handleAddOccurrence = (courseId: string, occurrence: CourseOccurrence, courseName: string) => {
-    // Add all sessions from this occurrence to the timetable
+  const handleAddOccurrence = (courseId: string, occurrence: CourseOccurrence, occurrenceIndex: number, courseName: string) => {
+    // Process each session in the occurrence
     occurrence.sessions.forEach(session => {
-      // Only add sessions that have both day and time
-      if (session.day && session.time) {
-        const newOccurrence: TimetableOccurrence = {
-          courseId,
-          courseName,
-          courseCode: courseId,
-          occurrenceNumber: occurrence.occurrenceNumber,
-          time: session.time,
-          venue: session.venue || 'No venue specified',
-          lecturer: session.lecturer || 'No lecturer specified',
-          day: session.day,
-          activityType: occurrence.activityType
-        };
+      const standardizedDay = session.day.toUpperCase();
+      
+      const newOccurrence: ITimetableOccurrence = {
+        courseId,
+        courseName,
+        courseCode: courseId,
+        occurrenceNumber: occurrence.occurrenceNumber,
+        time: session.time,
+        venue: session.venue,
+        lecturer: session.lecturer,
+        day: standardizedDay,
+        activityType: occurrence.activityType
+      };
 
-        setTimetableOccurrences(prev => ({
+      // Update timetable occurrences
+      setTimetableOccurrences(prev => {
+        const dayOccurrences = [...(prev[standardizedDay] || [])];
+        
+        // Find if there's an existing occurrence
+        const existingIndex = dayOccurrences.findIndex(
+          occ => occ.courseId === courseId && 
+                occ.time === session.time && 
+                occ.occurrenceNumber === occurrence.occurrenceNumber
+        );
+        
+        if (existingIndex !== -1) {
+          // Replace existing occurrence
+          dayOccurrences[existingIndex] = newOccurrence;
+        } else {
+          // Add new occurrence
+          dayOccurrences.push(newOccurrence);
+        }
+        
+        return {
           ...prev,
-          [session.day]: [...(prev[session.day] || []), newOccurrence]
-        }));
-      }
+          [standardizedDay]: dayOccurrences.sort((a, b) => {
+            // Sort by time first
+            const timeA = a.time.split(' - ')[0];
+            const timeB = b.time.split(' - ')[0];
+            const timeCompare = timeA.localeCompare(timeB);
+            if (timeCompare !== 0) return timeCompare;
+            
+            // Then by course ID
+            return a.courseId.localeCompare(b.courseId);
+          })
+        };
+      });
     });
 
+    // Track added occurrence using the occurrence number from the data
     setAddedOccurrences(prev => ({
       ...prev,
-      [courseId]: occurrence.occurrenceNumber
+      [courseId]: occurrenceIndex.toString()
     }));
   };
 
   const handleRemoveOccurrence = (courseId: string, occurrenceNumber: string) => {
-    // Remove all sessions of this occurrence from all days
+    // Remove all sessions for this occurrence from the timetable
     setTimetableOccurrences(prev => {
-      const newOccurrences = { ...prev };
-      Object.keys(newOccurrences).forEach(day => {
-        newOccurrences[day] = newOccurrences[day].filter(
-          (occ: TimetableOccurrence) => !(occ.courseId === courseId && occ.occurrenceNumber === occurrenceNumber)
+      const newTimetable = { ...prev };
+      
+      // Go through each day
+      Object.keys(newTimetable).forEach(day => {
+        // Filter out occurrences that match the courseId AND occurrenceNumber
+        newTimetable[day] = newTimetable[day].filter(
+          occ => !(occ.courseId === courseId && occ.occurrenceNumber === occurrenceNumber)
         );
       });
-      return newOccurrences;
+      
+      return newTimetable;
     });
 
-    setAddedOccurrences(prev => ({
-      ...prev,
-      [courseId]: null
-    }));
+    // Reset the added occurrence state to allow re-adding
+    setAddedOccurrences(prev => {
+      const newAddedOccurrences = { ...prev };
+      delete newAddedOccurrences[courseId];
+      return newAddedOccurrences;
+    });
   };
 
   const handleRemoveCourse = (courseId: string) => {
@@ -218,7 +239,7 @@ export const Timetable = () => {
       const newOccurrences = { ...prev };
       Object.keys(newOccurrences).forEach(day => {
         newOccurrences[day] = newOccurrences[day].filter(
-          (occ: TimetableOccurrence) => occ.courseId !== courseId
+          (occ: ITimetableOccurrence) => occ.courseId !== courseId
         );
       });
       return newOccurrences;
@@ -243,7 +264,7 @@ export const Timetable = () => {
       const wrapper = document.createElement('div');
       wrapper.style.position = 'absolute';
       wrapper.style.left = '-9999px';
-      wrapper.style.width = '1600px'; // Make it wider
+      wrapper.style.width = '2000px'; // Increased width
       wrapper.style.height = 'auto';
       wrapper.style.backgroundColor = '#030712';
       wrapper.style.padding = '40px';
@@ -254,22 +275,24 @@ export const Timetable = () => {
       clone.style.height = 'auto';
       clone.style.overflow = 'visible';
       clone.style.width = '100%';
-      clone.style.maxWidth = '1400px';
+      clone.style.maxWidth = '1600px'; // Increased max-width
       clone.style.margin = '0 auto';
+      clone.style.transform = 'scale(0.8)'; // Scale down to fit more content
+      clone.style.transformOrigin = 'top center';
       
       // Add to wrapper
       wrapper.appendChild(clone);
       document.body.appendChild(wrapper);
       
-      // Capture the image
+      // Capture the image with adjusted dimensions
       html2canvas(wrapper, {
         backgroundColor: '#030712',
-        scale: 2,
+        scale: 5, // Adjusted scale for better quality
         useCORS: true,
         allowTaint: true,
         logging: false,
-        width: 1600,
-        height: wrapper.offsetHeight
+        width: 2000, // Match wrapper width
+        height: wrapper.offsetHeight * 0.8 // Reduce height proportion
       }).then(canvas => {
         const image = canvas.toDataURL('image/png', 1.0);
         const link = document.createElement('a');
@@ -385,7 +408,10 @@ export const Timetable = () => {
                       <FaTrash 
                         className="remove-icon" 
                         size={14}
-                        onClick={() => handleRemoveCourse(course.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveCourse(course.id);
+                        }}
                       />
                       {expandedCourses.includes(course.id) ? (
                         <FaChevronUp className="expand-icon" />
@@ -397,7 +423,7 @@ export const Timetable = () => {
                 </div>
                 {expandedCourses.includes(course.id) && (
                   <div className="course-occurrences">
-                    {course.occurrences.map((occurrence) => (
+                    {course.occurrences.map((occurrence, index) => (
                       <div key={occurrence.occurrenceNumber} className="occurrence-item">
                         <div className="occurrence-number">
                           <div className="tag-group">
@@ -406,7 +432,7 @@ export const Timetable = () => {
                               <span className="activity-type">{occurrence.activityType}</span>
                             )}
                           </div>
-                          {addedOccurrences[course.id] === occurrence.occurrenceNumber ? (
+                          {addedOccurrences[course.id] === index.toString() ? (
                             <button 
                               className="remove-occurrence-btn"
                               onClick={(e) => {
@@ -422,7 +448,7 @@ export const Timetable = () => {
                               className="add-occurrence-btn"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleAddOccurrence(course.id, occurrence, course.name);
+                                handleAddOccurrence(course.id, occurrence, index, course.name);
                               }}
                               disabled={addedOccurrences[course.id] !== undefined && addedOccurrences[course.id] !== null}
                             >
@@ -473,7 +499,7 @@ export const Timetable = () => {
         {/* Right Panel - Timetable Grid */}
         <div className="timetable-grid" ref={timetableRef}>
           <div className="days-header">
-            <div></div> {/* Empty cell for time column */}
+            <div></div>
             {days.map((day) => (
               <div key={day} className="day-header">{day}</div>
             ))}
@@ -482,15 +508,14 @@ export const Timetable = () => {
           <div className="grid-scroll-container">
             <div className="time-column">
               {timeSlots.map((time) => (
-                <div key={time} className="time-label" style={{ height: '100px' }}>{time}</div>
+                <div key={time} className="time-label">{time}</div>
               ))}
             </div>
 
-            {/* Grid lines */}
             <div className="grid-lines">
               <div className="horizontal-lines">
                 {timeSlots.map((_, i) => (
-                  <div key={i} className="horizontal-line" style={{ height: '100px' }} />
+                  <div key={i} className="horizontal-line" />
                 ))}
               </div>
               <div className="vertical-lines">
@@ -503,53 +528,48 @@ export const Timetable = () => {
             <div className="grid-content">
               {days.map((day) => (
                 <div key={day} className="day-column">
-                  {timetableOccurrences[day]?.map((occurrence, index) => {
-                    const startTime = occurrence.time.split(' - ')[0];
-                    const endTime = occurrence.time.split(' - ')[1];
+                  {timetableOccurrences[day.toUpperCase()]?.map((occurrence, index) => {
+                    const [startTime, endTime] = occurrence.time.split(' - ');
                     const topPosition = calculateTimePosition(startTime);
                     const blockHeight = calculateBlockHeight(startTime, endTime);
-                    const courseColor = courseColors[occurrence.courseId] || { bg: 'rgba(20, 184, 166, 0.15)', border: 'rgba(20, 184, 166, 0.3)' };
-                    
+
                     return (
                       <div 
-                        key={`${occurrence.courseId}-${index}`} 
+                        key={`${occurrence.courseId}-${occurrence.occurrenceNumber}-${index}`} 
                         className="course-block"
                         style={{
                           top: `${topPosition}px`,
-                          '--block-height': `${blockHeight}px`,
                           height: `${blockHeight}px`,
-                          background: courseColor.bg,
-                          borderColor: courseColor.border
-                        } as React.CSSProperties}
+                          backgroundColor: courseColors[occurrence.courseId]?.bg || 'rgba(20, 184, 166, 0.15)',
+                          borderColor: courseColors[occurrence.courseId]?.border || 'rgba(20, 184, 166, 0.3)'
+                        }}
                       >
-                        <div className="course-header-row">
-                          <span className="course-code">{occurrence.courseCode}</span>
-                          <div className="tags-container">
-                            <span className="occ-tag">OCC {occurrence.occurrenceNumber}</span>
-                            {occurrence.activityType && (
-                              <span className="activity-type">{occurrence.activityType}</span>
-                            )}
+                        <div className="course-block-content">
+                          <div className="course-header-row">
+                            <span className="course-code">{occurrence.courseCode}</span>
+                            <div className="tags-container">
+                              <span className="occ-tag">OCC {occurrence.occurrenceNumber}</span>
+                              {occurrence.activityType && (
+                                <span className="activity-type" style={{ marginLeft: '4px' }}>{occurrence.activityType}</span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        <div className="course-name">{occurrence.courseName}</div>
-                        {blockHeight > 50 && (
+                          <div className="course-name">{occurrence.courseName}</div>
                           <div className="course-details">
                             <div className="detail-row">
-                              <FaUser className="detail-icon" />
-                              <span className="detail-text" style={{ 
-                                whiteSpace: 'pre-wrap',
-                                wordBreak: 'break-word',
-                                display: 'block'
-                              }}>{occurrence.lecturer}</span>
+                              <FaMapMarkerAlt className="detail-icon" />
+                              <span className="detail-text">{occurrence.venue}</span>
                             </div>
-                            {blockHeight > 70 && (
-                              <div className="detail-row">
-                                <FaMapMarkerAlt className="detail-icon" />
-                                <span className="detail-text">{occurrence.venue}</span>
-                              </div>
-                            )}
+                            <div className="detail-row">
+                              <FaUser className="detail-icon" />
+                              <span className="detail-text">
+                                {occurrence.lecturer ? 
+                                  occurrence.lecturer.split(/[,;]/).map(l => l.trim())[0] : 
+                                  'No lecturer specified'}
+                              </span>
+                            </div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     );
                   })}

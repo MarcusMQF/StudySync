@@ -498,6 +498,7 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
       occurrences: Map<string, {
         sessions: CourseSession[];
         activityType: string;
+        occurrenceNumber: string;
       }>;
     }>();
 
@@ -557,7 +558,8 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
       if (!course.occurrences.has(occurrenceStr)) {
         course.occurrences.set(occurrenceStr, {
           sessions: [],
-          activityType
+          activityType,
+          occurrenceNumber: occurrenceStr  // Store the occurrence number explicitly
         });
       }
       const occurrence = course.occurrences.get(occurrenceStr)!;
@@ -576,10 +578,11 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
 
       // If we have day/time in this row, create or update a session
       if (day && time) {
-        // Find existing session with same occurrence, day, and time
-        const existingSessionIndex = occurrence.sessions.findIndex(s => 
-          s.day === day && 
-          s.time === time
+        // Find existing session with same day and time within this occurrence
+        const existingSessionIndex = occurrence.sessions.findIndex(
+          (s) =>
+            s.day === day &&
+            s.time === time
         );
 
         if (existingSessionIndex !== -1) {
@@ -591,18 +594,18 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
             const existingLecturers = new Set(
               existingSession.lecturer
                 .split(/[,\n\r]+/)
-                .map(l => l.trim())
-                .filter(l => l && l !== '-')
+                .map((l) => l.trim())
+                .filter((l) => l && l !== '-')
             );
             
             // Add new lecturers to the set
-            lecturerList.forEach((l: string) => existingLecturers.add(l));
+            lecturerList.forEach((l) => existingLecturers.add(l));
 
             // Update the session while preserving existing data
             occurrence.sessions[existingSessionIndex] = {
               ...existingSession,           // Preserve all existing session data
               venue: venue,                 // Update venue if needed
-              lecturer: Array.from(existingLecturers).sort().join(', ') // Update with combined lecturers
+              lecturer: Array.from(existingLecturers).sort().join(', ') // Update with combined lecturers, sorted for consistency
             };
           }
         } else {
@@ -611,24 +614,30 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
             day,
             time,
             venue,
-            lecturer: lecturerList.join(', ')
+            lecturer: lecturerList.sort().join(', ') // Sort lecturers for consistency
           };
           occurrence.sessions.push(newSession);
         }
       } else if (lecturerList.length > 0 && lastValidDay && lastValidTime && occurrenceStr === lastValidOccurrence) {
         // If we have lecturers but no day/time, add them to the last valid session IN THE SAME OCCURRENCE
-        const existingSessionIndex = occurrence.sessions.findIndex(s => 
-          s.day === lastValidDay && 
-          s.time === lastValidTime
+        const existingSessionIndex = occurrence.sessions.findIndex(
+          (s) =>
+            s.day === lastValidDay &&
+            s.time === lastValidTime
         );
 
         if (existingSessionIndex !== -1) {
           const existingSession = occurrence.sessions[existingSessionIndex];
-          const existingLecturers = new Set(existingSession.lecturer.split(', ').filter(Boolean));
-          lecturerList.forEach(l => existingLecturers.add(l));
+          const existingLecturers = new Set(
+            existingSession.lecturer
+              .split(/[,\n\r]+/)
+              .map((l) => l.trim())
+              .filter((l) => l && l !== '-')
+          );
+          lecturerList.forEach((l) => existingLecturers.add(l));
           occurrence.sessions[existingSessionIndex] = {
             ...existingSession,
-            lecturer: Array.from(existingLecturers).sort().join(', ')
+            lecturer: Array.from(existingLecturers).sort().join(', ') // Sort lecturers for consistency
           };
         }
       }
