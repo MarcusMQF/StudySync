@@ -30,18 +30,41 @@ export const parseExcelFile = async (file: File): Promise<Course[]> => {
             return;
           }
 
-          // Parse day and time
-          const dayMatch = dayTimeInfo.match(/^([A-Za-z]+)/);
-          const timeMatch = dayTimeInfo.match(/(\d+:\d+)\s*-\s*(\d+:\d+)/);
-          
-          if (!dayMatch || !timeMatch) {
+          // Parse day and time ONCE
+          let day = '';
+          let time = '';
+          if (dayTimeInfo) {
+            const fullPattern = /^(MON|TUE|WED|THU|FRI|MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/i;
+            const match = dayTimeInfo.match(fullPattern);
+            
+            if (match) {
+              day = match[1].toUpperCase()
+                .replace(/^MON$/, 'MONDAY')
+                .replace(/^TUE$/, 'TUESDAY')
+                .replace(/^WED$/, 'WEDNESDAY')
+                .replace(/^THU$/, 'THURSDAY')
+                .replace(/^FRI$/, 'FRIDAY');
+              time = `${match[2]} - ${match[3]}`;
+            } else {
+              return; // Skip if can't parse day/time
+            }
+          }
+
+          // Parse lecturers ONCE
+          let lecturerList: string[] = [];
+          if (row['Tutor']) {
+            lecturerList = row['Tutor']
+              .split(/[,\n\r]+/)
+              .map((l: string) => l.trim())
+              .filter((l: string) => l && l !== '-');
+          }
+
+          // Skip if no valid data
+          if (!day || !time || lecturerList.length === 0) {
             return;
           }
 
-          const day = dayMatch[1].toUpperCase();
-          const time = `${timeMatch[1]} - ${timeMatch[2]}`;
-          
-          // Create course if it doesn't exist
+          // Create course if it doesn't exist (ONCE)
           if (!courses[courseId]) {
             courses[courseId] = {
               id: courseId,
@@ -50,7 +73,7 @@ export const parseExcelFile = async (file: File): Promise<Course[]> => {
             };
           }
 
-          // Find or create occurrence
+          // Find or create occurrence (ONCE)
           let occurrence = courses[courseId].occurrences.find(
             occ => occ.occurrenceNumber === occurrenceNumber
           );
@@ -64,118 +87,47 @@ export const parseExcelFile = async (file: File): Promise<Course[]> => {
             courses[courseId].occurrences.push(occurrence);
           }
 
-          // Parse lecturers first
-          let lecturerList: string[] = [];
-          if (row['Tutor']) {
-            lecturerList = row['Tutor']
-              .split(/[,\n\r]+/)
-              .map((l: string) => l.trim())
-              .filter((l: string) => l && l !== '-');
-          }
+          // Handle venue
+          let venue = occurrence.activityType === 'ONL' ? 'Online' : (row['Room']?.toString().trim() || 'No venue specified');
 
-          // Check if we should process this row (not a placeholder)
-          const shouldProcessRow = dayTimeInfo !== '- ()' && dayTimeInfo !== '-' && dayTimeInfo !== '()' && dayTimeInfo?.trim() !== '';
+          // Find if this exact day/time combination exists in current occurrence
+          const existingSessionIndex = occurrence.sessions.findIndex(
+            session => session.day === day && session.time === time
+          );
 
-          // Only process the row if it's not a placeholder and has lecturers
-          if (shouldProcessRow && lecturerList.length > 0) {
-            // Parse day and time
-            const dayMatch = dayTimeInfo.match(/^([A-Za-z]+)/);
-            const timeMatch = dayTimeInfo.match(/(\d+:\d+)\s*-\s*(\d+:\d+)/);
+          if (existingSessionIndex !== -1) {
+            // This is a multi-lecturer session in the same occurrence
+            const existingSession = occurrence.sessions[existingSessionIndex];
+            const existingLecturers = new Set(
+              existingSession.lecturer
+                .split(/[,\n\r]+/)
+                .map(l => l.trim())
+                .filter(l => l && l !== '-')
+            );
             
-            if (!dayMatch || !timeMatch) {
-              return;
+            // Add all new lecturers without checking for duplicates
+            lecturerList.forEach(l => existingLecturers.add(l));
+            
+            // Update venue only if we have a valid one
+            let updatedVenue = existingSession.venue;
+            if (venue && venue !== 'No venue specified') {
+              updatedVenue = venue;
             }
-
-            const day = dayMatch[1].toUpperCase();
-            const time = `${timeMatch[1]} - ${timeMatch[2]}`;
-
-            // Find or create occurrence
-            let occurrence = courses[courseId].occurrences.find(
-              occ => occ.occurrenceNumber === occurrenceNumber
-            );
-
-            if (!occurrence) {
-              occurrence = {
-                occurrenceNumber,
-                activityType: activityType.toUpperCase(),
-                sessions: []
-              };
-              courses[courseId].occurrences.push(occurrence);
-            }
-
-            // Handle venue
-            let venue = occurrence.activityType === 'ONL' ? 'Online' : (row['Room']?.toString().trim() || 'No venue specified');
-
-            // Find existing session with same day/time
-            const existingSessionIndex = occurrence.sessions.findIndex(
-              session => session.day === day && session.time === time
-            );
-
-            if (existingSessionIndex !== -1) {
-              // Get the existing session
-              const existingSession = occurrence.sessions[existingSessionIndex];
-              
-              // Get existing lecturers as a Set
-              const allLecturers = new Set(
-                existingSession.lecturer
-                  .split(/[,\n\r]+/)
-                  .map(l => l.trim())
-                  .filter(l => l && l !== '-')
-              );
-              
-              // Add new lecturers to the set
-              lecturerList.forEach((l: string) => allLecturers.add(l));
-
-              // Update the session while preserving existing data
-              occurrence.sessions[existingSessionIndex] = {
-                ...existingSession,           // Preserve all existing session data
-                venue: venue,                 // Update venue if needed
-                lecturer: Array.from(allLecturers).sort().join(', ') // Update with combined lecturers
-              };
-
-              if (courseId === 'GBB0046') {
-                console.log('Updated session for GBB0046:', {
-                  occurrence: occurrenceNumber,
-                  day,
-                  time,
-                  existingLecturers: existingSession.lecturer,
-                  newLecturers: lecturerList,
-                  combinedLecturers: Array.from(allLecturers)
-                });
-              }
-            } else {
-              // Create new session
-              const newSession: CourseSession = {
-                day,
-                time,
-                venue,
-                lecturer: lecturerList.join(', ')
-              };
-              occurrence.sessions.push(newSession);
-
-              if (courseId === 'GBB0046') {
-                console.log('Created new session for GBB0046:', {
-                  occurrence: occurrenceNumber,
-                  day,
-                  time,
-                  lecturers: lecturerList
-                });
-              }
-            }
-          }
-
-          if (courseId === 'GQA0078') {
-            console.log(`Processing GQA0078:`, {
+            
+            occurrence.sessions[existingSessionIndex] = {
+              ...existingSession,
+              venue: updatedVenue,
+              lecturer: Array.from(existingLecturers).join(', ')
+            };
+          } else {
+            // This is a new session for this occurrence
+            const newSession: CourseSession = {
               day,
               time,
-              lecturers: lecturerList,
-              sessions: occurrence.sessions.map(s => ({
-                day: s.day,
-                time: s.time,
-                venue: s.venue,
-                lecturer: s.lecturer
-              }))
-            });
+              venue,
+              lecturer: lecturerList.join(', ')
+            };
+            occurrence.sessions.push(newSession);
           }
         });
 
@@ -293,15 +245,14 @@ export const parseStaticExcelData = (data: ArrayBuffer): Course[] => {
         lecturer
       };
       
-      // Check if session already exists
+      // Check if session already exists in the SAME occurrence (only check day and time)
       const sessionExists = occurrence.sessions.some(
         existingSession =>
           existingSession.day === newSession.day &&
-          existingSession.time === newSession.time &&
-          existingSession.venue === newSession.venue &&
-          existingSession.lecturer === newSession.lecturer
+          existingSession.time === newSession.time
       );
       
+      // Only add if it doesn't exist in this occurrence
       if (!sessionExists) {
         occurrence.sessions.push(newSession);
       }
@@ -335,91 +286,18 @@ export const loadExcelData = async (): Promise<Course[]> => {
     // Use the improved loadCoursesFromExcel function
     const courses = await loadCoursesFromExcel();
     
-    // If no courses were parsed, return sample data
+    // If no courses were parsed, return empty array
     if (courses.length === 0) {
-      console.warn("No courses found in Excel file, using sample data");
-      return getSampleCourses();
+      console.warn("No courses found in Excel file");
+      return [];
     }
     
     return courses;
   } catch (error) {
     console.error("Error loading Excel data:", error);
-    console.warn("Using sample data as fallback due to error");
-    return getSampleCourses();
+    return [];
   }
 };
-
-// Sample courses for testing and fallback
-function getSampleCourses(): Course[] {
-  return [
-    {
-      id: "GBA0021",
-      name: "APPRECIATING LITERATURE",
-      occurrences: [
-        {
-          occurrenceNumber: "1",
-          activityType: "LEC",
-          sessions: [
-            {
-              day: "Monday",
-              time: "10:00 - 12:00",
-              venue: "Room A101",
-              lecturer: "Dr. Smith"
-            },
-            {
-              day: "Wednesday",
-              time: "14:00 - 16:00",
-              venue: "Room B202",
-              lecturer: "Dr. Smith"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: "GBA0022",
-      name: "INTRODUCTION TO PHILOSOPHY",
-      occurrences: [
-        {
-          occurrenceNumber: "1",
-          activityType: "LEC",
-          sessions: [
-            {
-              day: "Tuesday",
-              time: "09:00 - 11:00",
-              venue: "Room C303",
-              lecturer: "Prof. Johnson"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: "CS1101",
-      name: "INTRODUCTION TO PROGRAMMING",
-      occurrences: [
-        {
-          occurrenceNumber: "1",
-          activityType: "LEC",
-          sessions: [
-            {
-              day: "Monday",
-              time: "14:00 - 16:00",
-              venue: "Lab 1",
-              lecturer: "Dr. Lee"
-            },
-            {
-              day: "Thursday",
-              time: "10:00 - 12:00",
-              venue: "Lab 2",
-              lecturer: "Dr. Lee"
-            }
-          ]
-        }
-      ]
-    }
-  ];
-}
 
 export const loadCoursesFromExcel = async (): Promise<Course[]> => {
   try {
@@ -559,7 +437,7 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
         course.occurrences.set(occurrenceStr, {
           sessions: [],
           activityType,
-          occurrenceNumber: occurrenceStr  // Store the occurrence number explicitly
+          occurrenceNumber: occurrenceStr
         });
       }
       const occurrence = course.occurrences.get(occurrenceStr)!;
@@ -577,44 +455,43 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
       }
 
       // If we have day/time in this row, create or update a session
-      if (day && time) {
-        // Find existing session with same day and time within this occurrence
+      if (day && time && lecturerList.length > 0) {
+        // Find if this exact day/time combination exists in current occurrence
         const existingSessionIndex = occurrence.sessions.findIndex(
-          (s) =>
-            s.day === day &&
-            s.time === time
+          session => session.day === day && session.time === time
         );
 
         if (existingSessionIndex !== -1) {
-          // Get the existing session
+          // This is a multi-lecturer session in the same occurrence
           const existingSession = occurrence.sessions[existingSessionIndex];
+          const existingLecturers = new Set(
+            existingSession.lecturer
+              .split(/[,\n\r]+/)
+              .map(l => l.trim())
+              .filter(l => l && l !== '-')
+          );
           
-          if (lecturerList.length > 0) {
-            // Get existing lecturers as a Set
-            const existingLecturers = new Set(
-              existingSession.lecturer
-                .split(/[,\n\r]+/)
-                .map((l) => l.trim())
-                .filter((l) => l && l !== '-')
-            );
-            
-            // Add new lecturers to the set
-            lecturerList.forEach((l) => existingLecturers.add(l));
-
-            // Update the session while preserving existing data
-            occurrence.sessions[existingSessionIndex] = {
-              ...existingSession,           // Preserve all existing session data
-              venue: venue,                 // Update venue if needed
-              lecturer: Array.from(existingLecturers).sort().join(', ') // Update with combined lecturers, sorted for consistency
-            };
+          // Add all new lecturers without checking for duplicates
+          lecturerList.forEach(l => existingLecturers.add(l));
+          
+          // Update venue only if we have a valid one
+          let updatedVenue = existingSession.venue;
+          if (venue && venue !== 'No venue specified') {
+            updatedVenue = venue;
           }
+          
+          occurrence.sessions[existingSessionIndex] = {
+            ...existingSession,
+            venue: updatedVenue,
+            lecturer: Array.from(existingLecturers).join(', ')
+          };
         } else {
-          // Create new session regardless of whether there are lecturers
+          // This is a new session for this occurrence
           const newSession: CourseSession = {
             day,
             time,
             venue,
-            lecturer: lecturerList.sort().join(', ') // Sort lecturers for consistency
+            lecturer: lecturerList.join(', ')
           };
           occurrence.sessions.push(newSession);
         }
@@ -634,10 +511,20 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
               .map((l) => l.trim())
               .filter((l) => l && l !== '-')
           );
+          
+          // Always merge lecturers for the same session
           lecturerList.forEach((l) => existingLecturers.add(l));
+
+          // Update venue only if we have a valid one
+          let updatedVenue = existingSession.venue;
+          if (venue && venue !== 'No venue specified') {
+            updatedVenue = venue;
+          }
+
           occurrence.sessions[existingSessionIndex] = {
             ...existingSession,
-            lecturer: Array.from(existingLecturers).sort().join(', ') // Sort lecturers for consistency
+            venue: updatedVenue,
+            lecturer: Array.from(existingLecturers).join(', ')
           };
         }
       }
@@ -693,14 +580,13 @@ export const loadCoursesFromExcel = async (): Promise<Course[]> => {
     });
 
     if (validCourses.length === 0) {
-      console.warn("No valid courses were processed, falling back to sample data");
-      return getSampleCourses();
+      console.warn("No valid courses were processed");
+      return [];
     }
 
     return validCourses;
   } catch (error) {
     console.error("Error loading courses from Excel:", error);
-    console.warn("Using sample data as fallback due to error");
-    return getSampleCourses();
+    return [];
   }
 };

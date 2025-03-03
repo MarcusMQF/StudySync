@@ -275,7 +275,7 @@ export const Timetable = () => {
       clone.style.height = 'auto';
       clone.style.overflow = 'visible';
       clone.style.width = '100%';
-      clone.style.maxWidth = '1600px'; // Increased max-width
+      clone.style.maxWidth = '2000px'; // Increased max-width
       clone.style.margin = '0 auto';
       clone.style.transform = 'scale(0.8)'; // Scale down to fit more content
       clone.style.transformOrigin = 'top center';
