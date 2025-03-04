@@ -41,8 +41,8 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
     >
       <div className="logo-container">
         <div className="logo-icon">
-        <img 
-            src="/src/assets/images/studysync.png" 
+          <img 
+            src="/studysync.png"
             alt="StudySync Logo" 
             style={{ width: '24px', height: '27px', objectFit: 'contain' }}
           />
