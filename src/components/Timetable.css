@@ -807,17 +807,22 @@
 @media (max-width: 768px) {
   .timetable-layout {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0;
+    display: flex;
+    flex-direction: column;
   }
   
   .course-panel {
     max-height: 300px;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    min-height: 100px;
   }
 
-  timetable-grid {
+  .timetable-grid {
     overflow-x: auto;
-    margin-top: 1rem; /* Add margin to ensure gap */
+    border-radius: 12px;
+    border: 1px solid rgba(20, 184, 166, 0.2);
+    flex: 1;
   }
 
   .timetable-header {
@@ -841,6 +846,52 @@
     padding: 0.25rem 0.5rem;
     font-size: 0.7rem;
   }
+
+  /* Smaller dialogs for mobile */
+  .warning-modal,
+  .confirm-dialog {
+    padding: 1rem;
+    max-width: 85%;
+  }
+
+  .warning-header,
+  .confirm-dialog-header {
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .warning-icon {
+    font-size: 1.25rem;
+  }
+
+  .warning-title,
+  .confirm-dialog-title {
+    font-size: 1rem;
+  }
+
+  .warning-content,
+  .confirm-dialog-content {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .conflict-days {
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+  }
+
+  .warning-actions,
+  .confirm-dialog-actions {
+    gap: 0.5rem;
+  }
+
+  .warning-button,
+  .confirm-dialog-button {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -854,6 +905,23 @@
     margin-left: 0;
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .warning-modal,
+  .confirm-dialog {
+    max-width: 95%;
+    padding: 0.875rem;
+  }
+
+  .warning-content,
+  .confirm-dialog-content {
+    font-size: 0.8rem;
+  }
+
+  .warning-button,
+  .confirm-dialog-button {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
   }
 }
 

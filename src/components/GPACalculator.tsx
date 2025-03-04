@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaUndo } from 'react-icons/fa';
+import { FaUndo} from 'react-icons/fa';
 import DecryptedText from './DecryptedText';
 import './GPACalculator.css';
 

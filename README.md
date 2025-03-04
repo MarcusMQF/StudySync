@@ -1,79 +1,114 @@
-# StudySync
+<div align="center">
+  <img src="/public/studysync.png" alt="StudySync Logo" width="120" height="120" />
+  <h1>StudySync</h1>
+  <p>A modern academic planning platform that helps students organize their university life efficiently.</p>
 
-A modern student productivity application built to help students manage their academic life efficiently.
+  <div>
+    <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React 19" />
+    <img src="https://img.shields.io/badge/TypeScript-5.2-blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Vite-5.0-blue?style=for-the-badge&logo=vite" alt="Vite" />
+    <img src="https://img.shields.io/github/last-commit/MarcusMQF/StudySync?style=for-the-badge&color=green" alt="Last Commit" />
+    <a href="./LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
+    </a>
+  </div>
+</div>
 
-## 🎯 Features
+## Description
 
-- **Interactive Timetable**: Easily manage and visualize your class schedule
-- **GPA Calculator**: Calculate and track your academic performance
-- **AI Assistant**: Get intelligent help with your studies
-- **Modern UI**: Clean, responsive interface with dark mode support
-- **Calendar Integration**: Keep track of important dates and deadlines
+StudySync is a comprehensive academic planning tool designed specifically for University of Malaya students. It automatically loads and synchronizes with the latest course data from UM's TimeEdit system, providing real-time access to all available courses, their schedules, and occurrences.
 
-## 🚀 Tech Stack
+### Data Integration
+- **Real-time Course Data**: Integrates with UM TimeEdit system to provide up-to-date course information
+- **Automatic Updates**: Course data is regularly updated to reflect the latest changes from TimeEdit
+- **Comprehensive Coverage**: Includes all faculties, courses, and their respective occurrences
 
-- React 19
-- TypeScript
-- Vite
-- Radix UI Components
-- React Icons
-- Date-fns
-- ESLint for code quality
+- [um-timetable-sdk](https://github.com/damnitjoshua/um-timetable-sdk) - providing the foundation for TimeEdit data parsing and structuring.
 
-## 📦 Installation
+## Features
 
-1. Clone the repository:
-```bash
-git clone [your-repository-url]
-cd StudySync
-```
+- 📅 **Interactive Timetable**
+  - Drag-and-drop course scheduling
+  - Multiple occurrence management
+  - Conflict detection and warnings
+  - Automatic time slot organization
+  - Real-time sync with UM TimeEdit data
 
-2. Install dependencies:
-```bash
-npm install
-```
+- 🎯 **GPA Calculator**
+  - Real-time GPA calculation
+  - Grade tracking and prediction
+  - Semester-wise breakdown
+  - Target GPA planning
 
-3. Start the development server:
-```bash
-npm run dev
-```
+- 🤖 **AI Assistant**
+  - Intelligent study recommendations
+  - Course planning assistance
+  - Academic goal tracking
+  - Personalized learning insights
 
-The application will be available at `http://localhost:5173`
+## Technologies Used
 
-## 🛠️ Available Scripts
+| Category | Technologies |
+|----------|-------------|
+| 🛠️ **Core** | [![React](https://img.shields.io/badge/-React%2019-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/) [![TypeScript](https://img.shields.io/badge/-TypeScript%205.2-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![Vite](https://img.shields.io/badge/-Vite%205.0-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/) |
+| 🎨 **UI & Styling** | [![CSS Modules](https://img.shields.io/badge/-CSS%20Modules-000000?style=flat&logo=css3&logoColor=white)](https://github.com/css-modules/css-modules) [![React Icons](https://img.shields.io/badge/-React%20Icons-61DAFB?style=flat&logo=react&logoColor=black)](https://react-icons.github.io/react-icons/) |
+| 📊 **State Management** | [![Context API](https://img.shields.io/badge/-Context%20API-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/docs/context.html) • Local Storage • Custom Hooks |
+| 🔧 **Development** | [![ESLint](https://img.shields.io/badge/-ESLint-4B32C3?style=flat&logo=eslint&logoColor=white)](https://eslint.org/) [![Prettier](https://img.shields.io/badge/-Prettier-F7B93E?style=flat&logo=prettier&logoColor=black)](https://prettier.io/) |
+| 🧭 **Routing** | [![React Router](https://img.shields.io/badge/-React%20Router-CA4245?style=flat&logo=react-router&logoColor=white)](https://reactrouter.com/) |
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run lint` - Run ESLint
-- `npm run preview` - Preview production build
+## Benefits
 
-## 🏗️ Project Structure
+- **Time Management**
+  - Visual schedule organization
+  - Quick access to class information
+  - Efficient course planning
 
-```
-src/
-├── assets/         # Static assets
-├── components/     # React components
-├── App.tsx         # Main application component
-├── main.tsx        # Application entry point
-└── index.css       # Global styles
-```
+- **User Experience**
+  - Clean, modern interface
+  - Dark mode by default
+  - Responsive on all devices
+  - Intuitive navigation
 
-## 🎨 Customization
+## How It Works
 
-The application uses a custom font which can be configured in `src/index.css`. The theme colors are based on a dark mode design with teal accents (#14b8a6).
+1. **Course Management**
+   - Select modules and preferred occurrences from available options
+   - Resolve scheduling conflicts automatically
+   - Save and export personalized timetable
+   - Stay updated with latest course changes
 
-## 🔧 Development
+2. **GPA Tracking**
+   - Enter course grades
+   - View calculated GPA
+   - Track semester progress
+   - Set academic targets
 
-The project uses TypeScript with strict mode enabled and includes comprehensive ESLint configuration for code quality. The build system is configured with Vite for optimal development experience.
+3. **AI Assistance**
+   - Get personalized advice
+   - Optimize study schedule
+   - Receive course recommendations
+   - Track learning progress
 
-## 📱 Responsive Design
+## Responsive Design
 
-StudySync is fully responsive and works seamlessly across desktop and mobile devices. The sidebar automatically collapses on smaller screens for better usability.
+StudySync is designed to work seamlessly across all devices:
+- **Desktop**: Full-featured interface with sidebar navigation
+- **Tablet**: Collapsible sidebar with touch support
+- **Mobile**: Optimized layout for smaller screens
 
-## 🤝 Contributing
+## Updates
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+StudySync is actively maintained and regularly updated to ensure compatibility with the UM TimeEdit system. Updates include:
+- Latest course data synchronization
+- New feature implementations
+- Bug fixes and performance improvements
+- UI/UX enhancements
 
-## 📄 License
+Stay tuned for regular updates by watching or starring this repository! ⭐
 
-[Your License Here]
+## License
+
+This project is licensed under the [MIT License](./LICENSE).
+
+## Author
+- Marcus Mah Qing Fung

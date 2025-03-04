@@ -6,6 +6,7 @@
   color: white;
   overflow-y: auto;
   min-height: 100vh;
+  position: relative;
 }
 
 .gpa-header {
@@ -79,37 +80,14 @@
   align-items: center;
   gap: 0.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(20, 184, 166, 0.1);
+  border-bottom: 0.5px solid #09463f;
   letter-spacing: 0.02em;
   position: relative;
 }
 
+/* Remove the ::after pseudo-element */
 .grade-reference h2::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    rgba(20, 184, 166, 0.1) 0%,
-    rgba(20, 184, 166, 0.4) 25%,
-    #14b8a6 50%,
-    rgba(20, 184, 166, 0.4) 75%,
-    rgba(20, 184, 166, 0.1) 100%
-  );
-  background-size: 200% 100%;
-  animation: gradientMove 3s linear infinite;
-}
-
-@keyframes gradientMove {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: -100% 0;
-  }
+  display: none;
 }
 
 .grade-table {
@@ -148,13 +126,13 @@
 }
 
 .grade-table th:first-child {
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+  border-top-left-radius: 1px;
+  border-bottom-left-radius: 1px;
 }
 
 .grade-table th:last-child {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-top-right-radius: 1px;
+  border-bottom-right-radius: 1px;
 }
 
 .grade-table td {
@@ -254,7 +232,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  height: calc(100vh - 13.7rem);
+  height: calc(100vh - 13rem);
   min-height: min-content;
 }
 
@@ -262,9 +240,10 @@
   background: rgba(3, 7, 18, 0.5);
   border: 1px solid rgba(20, 184, 166, 0.2);
   border-radius: 12px;
-  padding: 1rem 1.5rem 1.5rem;
+  padding: 0 1.5rem 1.5rem;
   height: calc(100% - 8.5rem);
   overflow: auto;
+  position: relative;
 }
 
 .subjects-table {
@@ -279,25 +258,23 @@
   border-bottom: 1px solid rgba(20, 184, 166, 0.1);
 }
 
-.subjects-table th {
-  font-weight: 600;
-  color: #14b8a6;
-  font-size: 0.9rem;
-  position: sticky;
-  top: -1px;
-  background: rgba(3, 7, 18, 0.95);
-  z-index: 1;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  backdrop-filter: blur(8px);
-}
-
 .subjects-table thead {
   position: sticky;
   top: 0;
   z-index: 2;
+  background: rgba(3, 7, 18, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.subjects-table th {
+  font-weight: 600;
+  color: #14b8a6;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1rem 0.75rem;
+  background: rgba(3, 7, 18, 0.7);
+  border-bottom: 1px solid rgba(20, 184, 166, 0.2);
 }
 
 .subjects-table td {
@@ -467,7 +444,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  height: 7rem;
+  height: 7.3rem;
 }
 
 .result-card {
@@ -580,7 +557,7 @@
 
   .gpa-layout {
     grid-template-columns: 1fr;
-    margin-bottom: 6rem;
+    margin-bottom: 1.5rem;
     height: auto;
     min-height: min-content;
   }
@@ -653,4 +630,13 @@
   font-weight: 500;
   transition: all 0.2s ease;
   text-align: left;
+}
+
+/* Add light mode styles for the header */
+:root[class~="light-mode"] .subjects-table thead {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+:root[class~="light-mode"] .subjects-table th {
+  background: rgba(255, 255, 255, 0.95);
 } 
