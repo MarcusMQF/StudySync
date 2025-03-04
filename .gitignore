@@ -24,13 +24,6 @@ dist-ssr
 *.sw?
 
 # Large files and data
-*.json
-!package.json
-!package-lock.json
-!tsconfig.json
-!vite.config.json
-public/timetable_data.json
-public/course_events_with_details.json
 *.xlsx
 *.xls
 *.csv
@@ -39,3 +32,6 @@ public/course_events_with_details.json
 *.7z
 *.tar
 *.gz
+
+# Vercel
+.vercel

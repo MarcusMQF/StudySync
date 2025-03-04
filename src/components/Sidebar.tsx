@@ -1,4 +1,4 @@
-import { FaCalendarAlt, FaBook, FaCalculator, FaRobot } from 'react-icons/fa';
+import { FaCalendarAlt, FaCalculator, FaRobot } from 'react-icons/fa';
 import { Calendar } from './Calendar';
 import './Sidebar.css';
 import { useState } from 'react';
@@ -41,7 +41,11 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
     >
       <div className="logo-container">
         <div className="logo-icon">
-          <FaBook size={28} color="#14b8a6" />
+        <img 
+            src="/src/assets/images/studysync.png" 
+            alt="StudySync Logo" 
+            style={{ width: '24px', height: '27px', objectFit: 'contain' }}
+          />
         </div>
         <div className="logo-text">
           <h1>STUDYSYNC</h1>
