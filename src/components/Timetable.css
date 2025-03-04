@@ -11,9 +11,10 @@
 .timetable-header {
   display: flex;
   align-items: center;
-  gap: 0rem;
+  gap: 2rem;
   margin-bottom: 1rem;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .timetable-header h1 {
@@ -23,7 +24,7 @@
   color: #ffffff;
   display: flex;
   align-items: center;
-  min-width: 240px; /* Fixed width to prevent layout shifts */
+  white-space: nowrap;
 }
 
 .title-container {
@@ -39,7 +40,7 @@
 .draft-tag {
   background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(20, 184, 166, 0.1));
   color: #14b8a6;
-  padding: 0.25rem 0.75rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -268,11 +269,12 @@
 
 .occurrence-session {
   padding: 0.75rem 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 
 .occurrence-session:last-child {
@@ -317,7 +319,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-top: 0rem;
+  margin-top: 0;
+  padding-bottom: 0.75rem;
 }
 
 .occurrence-details .detail-row {
@@ -777,10 +780,53 @@
 @media (max-width: 768px) {
   .timetable-layout {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
   
   .course-panel {
     max-height: 300px;
+    margin-bottom: 1rem;
+  }
+
+  timetable-grid {
+    overflow-x: auto;
+    margin-top: 1rem; /* Add margin to ensure gap */
+  }
+
+  .timetable-header {
+    gap: 0.5rem;
+  }
+
+  .timetable-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .header-actions {
+    gap: 0.5rem;
+  }
+
+  .action-button {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .draft-tag {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .timetable-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .header-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 
@@ -789,6 +835,8 @@
   display: flex;
   gap: 0.75rem;
   margin-left: auto;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .action-button {

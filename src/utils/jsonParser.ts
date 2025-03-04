@@ -54,8 +54,8 @@ const convertTimeEditDataToCourses = (data: TimeEditData[]): Course[] => {
         if (!activities || activities.length === 0) return; // Skip empty activities
         
         activities.forEach(activity => {
-          // Skip exam venue sessions
-          if (activity.room === 'EXAM_HOLD_G') return;
+          // Skip exam venue sessions or any venue containing EXAM_HOLD
+          if (activity.room.includes('EXAM_HOLD')) return;
           
           if (!activity.occurrences || activity.occurrences.length === 0) return;
           
