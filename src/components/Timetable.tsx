@@ -5,6 +5,7 @@ import './Timetable.css';
 import DecryptedText from './DecryptedText';
 import { loadCoursesFromJson } from '../utils/jsonParser';
 import { Course, CourseOccurrence, TimetableOccurrence as ITimetableOccurrence } from '../types/course';
+import { MenuButton } from './MenuButton';
 
 type TimetableOccurrences = {
   [key: string]: ITimetableOccurrence[];
@@ -186,7 +187,11 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({ courseId, courseName, onC
   );
 };
 
-export const Timetable = () => {
+interface TimetableProps {
+  setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const Timetable = ({ setIsExpanded }: TimetableProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
@@ -519,6 +524,7 @@ export const Timetable = () => {
       
       <div className="timetable-header">
         <h1 className="title-container">
+          <MenuButton onClick={() => setIsExpanded(true)} />
           <DecryptedText 
             text="Academic Timetable"
             speed={50}

@@ -15,8 +15,8 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Navigate to="/timetable" replace />} />
-            <Route path="/timetable" element={<Timetable />} />
-            <Route path="/gpa-calculator" element={<GPACalculator isDarkMode={false} />} />
+            <Route path="/timetable" element={<Timetable setIsExpanded={setIsExpanded} />} />
+            <Route path="/gpa-calculator" element={<GPACalculator isDarkMode={false} setIsExpanded={setIsExpanded} />} />
           </Routes>
         </main>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FaUndo} from 'react-icons/fa';
+import { FaUndo } from 'react-icons/fa';
 import DecryptedText from './DecryptedText';
+import { MenuButton } from './MenuButton';
 import './GPACalculator.css';
 
 interface GradePoint {
@@ -31,9 +32,10 @@ interface Subject {
 
 interface GPACalculatorProps {
   isDarkMode: boolean;
+  setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const GPACalculator: React.FC<GPACalculatorProps> = ({ }) => {
+export const GPACalculator = ({ setIsExpanded }: GPACalculatorProps) => {
   const [subjects, setSubjects] = useState<Subject[]>(
     Array(10).fill({ grade: '', creditHours: '' })
   );
@@ -95,6 +97,7 @@ export const GPACalculator: React.FC<GPACalculatorProps> = ({ }) => {
     <div className="gpa-calculator">
       <div className="gpa-header">
         <div className="title-section">
+          <MenuButton onClick={() => setIsExpanded(true)} />
           <h1>
             <DecryptedText
               text="GPA Calculator"
