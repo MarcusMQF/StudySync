@@ -14,22 +14,43 @@ type TimetableOccurrences = {
 const generateCourseColor = (courseCode: string) => {
   // Color palette - modern, accessible colors
   const colors = [
+    // Reds & Pinks
     { bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.3)' },    // Red
+    { bg: 'rgba(244, 63, 94, 0.15)', border: 'rgba(244, 63, 94, 0.3)' },    // Rose
+    { bg: 'rgba(236, 72, 153, 0.15)', border: 'rgba(236, 72, 153, 0.3)' },  // Pink
+    { bg: 'rgba(251, 113, 133, 0.15)', border: 'rgba(251, 113, 133, 0.3)' }, // Light Pink
+    { bg: 'rgba(255, 182, 193, 0.15)', border: 'rgba(255, 182, 193, 0.3)' }, // Baby Pink
+
+    // Oranges & Yellows
     { bg: 'rgba(249, 115, 22, 0.15)', border: 'rgba(249, 115, 22, 0.3)' },  // Orange
+    { bg: 'rgba(251, 146, 60, 0.15)', border: 'rgba(251, 146, 60, 0.3)' },  // Light Orange
+    { bg: 'rgba(253, 186, 116, 0.15)', border: 'rgba(253, 186, 116, 0.3)' }, // Pale Orange
     { bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.3)' },  // Amber
-    { bg: 'rgba(132, 204, 22, 0.15)', border: 'rgba(132, 204, 22, 0.3)' },  // Lime
+    { bg: 'rgba(252, 211, 77, 0.15)', border: 'rgba(252, 211, 77, 0.3)' },  // Light Yellow
+
+    // Greens
     { bg: 'rgba(34, 197, 94, 0.15)', border: 'rgba(34, 197, 94, 0.3)' },    // Green
+    { bg: 'rgba(132, 204, 22, 0.15)', border: 'rgba(132, 204, 22, 0.3)' },  // Lime
     { bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.3)' },  // Emerald
-    { bg: 'rgba(20, 184, 166, 0.15)', border: 'rgba(20, 184, 166, 0.3)' },  // Teal
+    { bg: 'rgba(110, 231, 183, 0.15)', border: 'rgba(110, 231, 183, 0.3)' }, // Light Mint
+
+    // Blues & Cyans
     { bg: 'rgba(6, 182, 212, 0.15)', border: 'rgba(6, 182, 212, 0.3)' },    // Cyan
     { bg: 'rgba(14, 165, 233, 0.15)', border: 'rgba(14, 165, 233, 0.3)' },  // Sky
     { bg: 'rgba(59, 130, 246, 0.15)', border: 'rgba(59, 130, 246, 0.3)' },  // Blue
-    { bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.3)' },  // Indigo
+    { bg: 'rgba(147, 197, 253, 0.15)', border: 'rgba(147, 197, 253, 0.3)' }, // Light Blue
+
+    // Purples & Violets
     { bg: 'rgba(139, 92, 246, 0.15)', border: 'rgba(139, 92, 246, 0.3)' },  // Violet
     { bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.3)' },  // Purple
-    { bg: 'rgba(217, 70, 239, 0.15)', border: 'rgba(217, 70, 239, 0.3)' },  // Fuchsia
-    { bg: 'rgba(236, 72, 153, 0.15)', border: 'rgba(236, 72, 153, 0.3)' },  // Pink
-    { bg: 'rgba(244, 63, 94, 0.15)', border: 'rgba(244, 63, 94, 0.3)' },    // Rose
+    { bg: 'rgba(192, 132, 252, 0.15)', border: 'rgba(192, 132, 252, 0.3)' }, // Light Purple
+    { bg: 'rgba(216, 180, 254, 0.15)', border: 'rgba(216, 180, 254, 0.3)' }, // Lavender
+
+    // Browns & Neutrals
+    { bg: 'rgba(180, 83, 9, 0.15)', border: 'rgba(180, 83, 9, 0.3)' },      // Burnt Orange
+    { bg: 'rgba(234, 179, 8, 0.15)', border: 'rgba(234, 179, 8, 0.3)' },    // Golden
+    { bg: 'rgba(161, 98, 7, 0.15)', border: 'rgba(161, 98, 7, 0.3)' },      // Bronze
+    { bg: 'rgba(120, 113, 108, 0.15)', border: 'rgba(120, 113, 108, 0.3)' }, // Warm Gray
   ];
   
   // Hash the course code to get a consistent index
