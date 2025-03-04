@@ -3,7 +3,7 @@ import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, 
 import html2canvas from 'html2canvas';
 import './Timetable.css';
 import DecryptedText from './DecryptedText';
-import { loadExcelData } from '../utils/excelParser';
+import { loadCoursesFromJson } from '../utils/jsonParser';
 import { Course, CourseOccurrence, TimetableOccurrence as ITimetableOccurrence } from '../types/course';
 
 type TimetableOccurrences = {
@@ -135,12 +135,12 @@ export const Timetable = () => {
   const [showWarning, setShowWarning] = useState(false);
   const [conflicts, setConflicts] = useState<Array<{ day: string; time: string }>>([]);
 
-  // Load courses from Excel file
+  // Load courses from JSON file
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
-        const courses = await loadExcelData();
+        const courses = await loadCoursesFromJson();
         setAvailableCourses(courses);
         console.log('Loaded courses:', courses);
       } catch (error) {
