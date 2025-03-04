@@ -422,7 +422,7 @@
   left: 0;
   top: 0;
   width: 80px;
-  height: 1540px;
+  height: 1820px;
   background: #030712;
   z-index: 2;
   display: flex;
@@ -458,7 +458,7 @@
   margin-right: 6px;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  height: 1540px;
+  height: 1820px;
   position: relative;
   border-radius: 8px;
   overflow: hidden;
@@ -469,7 +469,7 @@
 
 .day-column {
   position: relative;
-  height: 1540px;
+  height: 1820px;
   border-right: 1px solid rgba(20, 184, 166, 0.5);
   box-sizing: border-box;
   min-width: 0;
@@ -486,7 +486,7 @@
   top: 0;
   left: 80px;
   right: 0;
-  height: 1540px;
+  height: 1820px;
   pointer-events: none;
   z-index: 1;
 }
@@ -496,7 +496,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 1540px;
+  height: 1820px;
   display: flex;
   flex-direction: column;
   width: calc(100% - 10px);
@@ -521,7 +521,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 1540px;
+  height: 1820px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
 }

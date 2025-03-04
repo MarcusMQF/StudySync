@@ -154,14 +154,14 @@ export const Timetable = () => {
   }, []);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-  const timeSlots = Array.from({ length: 11 }, (_, i) => {
+  const timeSlots = Array.from({ length: 13 }, (_, i) => {
     const hour = i + 8;
     return `${hour < 10 ? '0' : ''}${hour}:00`;
   });
 
   const calculateTimePosition = (time: string): number => {
     const [hours, minutes] = time.split(':').map(Number);
-    const hourPixels = (hours - 8) * 140; // Each hour is 90px
+    const hourPixels = (hours - 8) * 140; // Each hour is 140px
     const minutePixels = (minutes / 60) * 140; // Convert minutes to pixels proportionally
     return hourPixels + minutePixels;
   };
@@ -173,7 +173,7 @@ export const Timetable = () => {
     const startTotalMinutes = startHours * 60 + startMinutes;
     const endTotalMinutes = endHours * 60 + endMinutes;
     
-    return ((endTotalMinutes - startTotalMinutes) / 60) * 140; // Convert duration to pixels (90px per hour)
+    return ((endTotalMinutes - startTotalMinutes) / 60) * 140; // Convert duration to pixels (140px per hour)
   };
 
   // Handle search
@@ -600,7 +600,7 @@ export const Timetable = () => {
         {/* Right Panel - Timetable Grid */}
         <div className="timetable-grid" ref={timetableRef}>
           <div className="days-header">
-            <div></div>
+            <div className="day-header"></div>
             {days.map((day) => (
               <div key={day} className="day-header">{day}</div>
             ))}
@@ -615,13 +615,13 @@ export const Timetable = () => {
 
             <div className="grid-lines">
               <div className="horizontal-lines">
-                {timeSlots.map((_, i) => (
-                  <div key={i} className="horizontal-line" />
+                {Array.from({ length: 13 }, (_, i) => (
+                  <div key={i} className="horizontal-line"></div>
                 ))}
               </div>
               <div className="vertical-lines">
-                {days.map((_, index) => (
-                  <div key={index} className="vertical-line" />
+                {Array.from({ length: 5 }, (_, i) => (
+                  <div key={i} className="vertical-line"></div>
                 ))}
               </div>
             </div>
