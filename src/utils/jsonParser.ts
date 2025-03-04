@@ -17,71 +17,84 @@ interface TimeEditData {
 }
 
 export const loadCoursesFromJson = async (): Promise<Course[]> => {
+  let totalCourses = 0;
+  let skippedCourses = 0;
+  let examVenues = 0;
+
   try {
-    console.log('Attempting to fetch timetable_data.json...');
     const response = await fetch('/timetable_data.json');
     if (!response.ok) {
       throw new Error(`Failed to load timetable data: ${response.status} ${response.statusText}`);
     }
     
     const jsonData: TimeEditData[] = await response.json();
-    console.log('Successfully loaded JSON data:', {
-      numberOfCourses: jsonData.length,
-      sampleCourse: jsonData[0] // Log first course as sample
+    totalCourses = jsonData.length;
+    
+    const courses = convertTimeEditDataToCourses(jsonData, (stats) => {
+      skippedCourses = stats.skippedCourses;
+      examVenues = stats.examVenues;
     });
     
-    const courses = convertTimeEditDataToCourses(jsonData);
-    console.log('Converted courses:', {
-      numberOfCourses: courses.length,
-      sampleCourse: courses[0] // Log first converted course
+    // Log only essential information
+    console.info('📚 Course Loading Summary:', {
+      totalCoursesAvailable: totalCourses,
+      coursesLoaded: courses.length,
+      skippedCourses,
+      examVenuesSkipped: examVenues
     });
     
     return courses;
   } catch (error) {
     console.error('Error loading courses from JSON:', error);
-    console.error('Stack trace:', (error as Error).stack);
     return [];
   }
 };
 
-const convertTimeEditDataToCourses = (data: TimeEditData[]): Course[] => {
+const convertTimeEditDataToCourses = (
+  data: TimeEditData[], 
+  onStats: (stats: { skippedCourses: number; examVenues: number }) => void
+): Course[] => {
+  let skippedCourses = 0;
+  let examVenues = 0;
+
   try {
-    return data.map(courseData => {
+    const courses = data.map(courseData => {
       const occurrenceMap = new Map<string, CourseOccurrence>();
+      let hasValidSessions = false;
 
       // Process each activity type (LEC, TUT, etc.)
       Object.entries(courseData.activities).forEach(([activityType, activities]) => {
-        if (!activities || activities.length === 0) return; // Skip empty activities
+        if (!activities || activities.length === 0) return;
         
         activities.forEach(activity => {
-          // Skip exam venue sessions or any venue containing EXAM_HOLD
-          if (activity.room.includes('EXAM_HOLD')) return;
+          // Track exam venues
+          if (activity.room.includes('EXAM_HOLD')) {
+            examVenues++;
+            return;
+          }
           
           if (!activity.occurrences || activity.occurrences.length === 0) return;
           
+          hasValidSessions = true;
           activity.occurrences.forEach(occNum => {
-            // Initialize occurrence if it doesn't exist
             if (!occurrenceMap.has(occNum)) {
               occurrenceMap.set(occNum, {
                 occurrenceNumber: occNum,
-                activityType: '', // This will be a combined string of all activity types
+                activityType: '',
                 sessions: []
               });
             }
 
-            // Create session
             const session: CourseSession = {
               day: activity.dayOfWeek.toUpperCase(),
               time: `${activity.startTime} - ${activity.endTime}`,
               venue: activity.room || 'No venue specified',
-              lecturer: '' // TimeEdit data doesn't include lecturer info
+              lecturer: ''
             };
 
-            // Add session to the occurrence
             const occurrence = occurrenceMap.get(occNum)!;
             occurrence.sessions.push(session);
 
-            // Update activity type string
             const currentTypes = new Set(occurrence.activityType.split('/').filter(t => t));
             currentTypes.add(activityType);
             occurrence.activityType = Array.from(currentTypes).join('/');
@@ -89,31 +102,35 @@ const convertTimeEditDataToCourses = (data: TimeEditData[]): Course[] => {
         });
       });
 
-      // Convert map to array and sort sessions within each occurrence
-      const occurrences = Array.from(occurrenceMap.values()).map(occurrence => ({
-        ...occurrence,
-        sessions: occurrence.sessions.sort((a, b) => {
-          const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
-          const dayDiff = days.indexOf(a.day) - days.indexOf(b.day);
-          if (dayDiff !== 0) return dayDiff;
-          return a.time.localeCompare(b.time);
-        })
-      }));
+      // If course has no valid sessions, increment skipped counter
+      if (!hasValidSessions) {
+        skippedCourses++;
+        return null;
+      }
 
-      // Sort occurrences by number
-      occurrences.sort((a, b) => 
-        parseInt(a.occurrenceNumber) - parseInt(b.occurrenceNumber)
-      );
+      const occurrences = Array.from(occurrenceMap.values())
+        .map(occurrence => ({
+          ...occurrence,
+          sessions: occurrence.sessions.sort((a, b) => {
+            const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+            const dayDiff = days.indexOf(a.day) - days.indexOf(b.day);
+            if (dayDiff !== 0) return dayDiff;
+            return a.time.localeCompare(b.time);
+          })
+        }))
+        .sort((a, b) => parseInt(a.occurrenceNumber) - parseInt(b.occurrenceNumber));
 
       return {
         id: courseData.moduleCode,
         name: courseData.moduleName,
         occurrences
       };
-    });
+    }).filter((course): course is Course => course !== null);
+
+    onStats({ skippedCourses, examVenues });
+    return courses;
   } catch (error) {
     console.error('Error converting TimeEdit data to courses:', error);
-    console.error('Stack trace:', (error as Error).stack);
     return [];
   }
 }; 

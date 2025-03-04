@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo, FaExclamationTriangle } from 'react-icons/fa';
+import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo, FaExclamationTriangle, FaLinkedin, FaGithub } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import './Timetable.css';
 import DecryptedText from './DecryptedText';
@@ -138,6 +138,54 @@ const WarningModal: React.FC<WarningModalProps> = ({ conflicts, onClose }) => {
   );
 };
 
+// Add ConfirmDialog interface before the Timetable component
+interface ConfirmDialogProps {
+  courseId: string;
+  courseName: string;
+  onConfirm: () => void;
+  onClose: () => void;
+}
+
+// Add ConfirmDialog component before the Timetable component
+const ConfirmDialog: React.FC<ConfirmDialogProps> = ({ courseId, courseName, onConfirm, onClose }) => {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 300);
+  };
+
+  const handleConfirm = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onConfirm();
+      onClose();
+    }, 300);
+  };
+
+  return (
+    <div className={`confirm-dialog-overlay ${isClosing ? 'dialog-closing' : ''}`}>
+      <div className={`confirm-dialog ${isClosing ? 'dialog-closing' : ''}`}>
+        <div className="confirm-dialog-header">
+          <h3 className="confirm-dialog-title">Remove Course</h3>
+        </div>
+        <div className="confirm-dialog-content">
+          <p>Are you sure you want to remove {courseId}: {courseName}?</p>
+          <p>This will remove all occurrences of this course from your timetable.</p>
+        </div>
+        <div className="confirm-dialog-actions">
+          <button className="confirm-dialog-button cancel" onClick={handleClose}>
+            Cancel
+          </button>
+          <button className="confirm-dialog-button confirm" onClick={handleConfirm}>
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const Timetable = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Course[]>([]);
@@ -155,23 +203,35 @@ export const Timetable = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showWarning, setShowWarning] = useState(false);
   const [conflicts, setConflicts] = useState<Array<{ day: string; time: string }>>([]);
+  const [courseToRemove, setCourseToRemove] = useState<Course | null>(null);
 
   // Load courses from JSON file
   useEffect(() => {
+    let isMounted = true;
+    let controller = new AbortController();
+
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
         const courses = await loadCoursesFromJson();
-        setAvailableCourses(courses);
-        console.log('Loaded courses:', courses);
+        if (isMounted) {
+          setAvailableCourses(courses);
+        }
       } catch (error) {
         console.error('Error loading courses:', error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchCourses();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -362,7 +422,7 @@ export const Timetable = () => {
     // Reset the addedOccurrences state for this course
     setAddedOccurrences(prev => {
       const newAddedOccurrences = { ...prev };
-      delete newAddedOccurrences[courseId]; // Remove the course entry completely
+      delete newAddedOccurrences[courseId];
       return newAddedOccurrences;
     });
   };
@@ -431,6 +491,12 @@ export const Timetable = () => {
     setCourseColors(colors);
   }, [availableCourses]);
 
+  // Add initiateRemoveCourse function
+  const initiateRemoveCourse = (course: Course, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCourseToRemove(course);
+  };
+
   return (
     <div className="timetable-container">
       {/* Add warning modal */}
@@ -441,33 +507,28 @@ export const Timetable = () => {
         />
       )}
       
+      {/* Add confirmation dialog */}
+      {courseToRemove && (
+        <ConfirmDialog
+          courseId={courseToRemove.id}
+          courseName={courseToRemove.name}
+          onConfirm={() => handleRemoveCourse(courseToRemove.id)}
+          onClose={() => setCourseToRemove(null)}
+        />
+      )}
+      
       <div className="timetable-header">
         <h1 className="title-container">
           <DecryptedText 
-            text="Academic" 
-            speed={30}
-            maxIterations={15}
+            text="Academic Timetable"
+            speed={50}
             sequential={true}
-            revealDirection="center"
-            characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()"
-            className="decrypted-text-revealed"
-            encryptedClassName="decrypted-text-encrypted"
+            className="decrypted"
+            encryptedClassName="encrypted"
             animateOn="hover"
           />
-          <span className="title-spacer"> </span>
-          <DecryptedText 
-            text="Timetable" 
-            speed={30}
-            maxIterations={15}
-            sequential={true}
-            revealDirection="center"
-            characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()"
-            className="decrypted-text-revealed"
-            encryptedClassName="decrypted-text-encrypted"
-            animateOn="hover"
-          />
+          <span className="draft-tag">Beta</span>
         </h1>
-        <span className="draft-tag">Beta</span>
         <div className="header-actions">
           <button className="action-button reset-button" onClick={handleReset}>
             <FaUndo /> Reset
@@ -530,10 +591,7 @@ export const Timetable = () => {
                       <FaTrash 
                         className="remove-icon" 
                         size={14}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveCourse(course.id);
-                        }}
+                        onClick={(e) => initiateRemoveCourse(course, e)}
                       />
                       {expandedCourses.includes(course.id) ? (
                         <FaChevronUp className="expand-icon" />
@@ -703,7 +761,12 @@ export const Timetable = () => {
       </div>
 
       <div className="footer-credit">
-        Made by <a href="https://www.linkedin.com/in/mah-qing-fung/" target="_blank" rel="noopener noreferrer">MarcusMah</a>
+        <a href="https://www.linkedin.com/in/mah-qing-fung/" target="_blank" rel="noopener noreferrer" className="social-link">
+          <FaLinkedin size={20} />
+        </a>
+        <a href="https://github.com/MarcusMQF" target="_blank" rel="noopener noreferrer" className="social-link">
+          <FaGithub size={20} />
+        </a>
       </div>
     </div>
   );

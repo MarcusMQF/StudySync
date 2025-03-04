@@ -1,4 +1,5 @@
 import { FaCalendarAlt, FaCalculator, FaRobot } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import { Calendar } from './Calendar';
 import './Sidebar.css';
 import { useState } from 'react';
@@ -54,9 +55,9 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
       </div>
       <div className="sidebar-items-container">
         {menuItems.map((item, index) => (
-          <a 
+          <Link 
             key={index} 
-            href={item.path}
+            to={item.path}
             className="sidebar-item"
           >
             <span className="icon">{item.icon}</span>
@@ -64,7 +65,7 @@ const Sidebar = ({ isExpanded, setIsExpanded }: SidebarProps) => {
               <span className="label">{item.label}</span>
               <span className="description">{item.description}</span>
             </div>
-          </a>
+          </Link>
         ))}
       </div>
       <div className="calendar-container">

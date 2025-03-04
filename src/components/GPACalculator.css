@@ -1,0 +1,656 @@
+.gpa-calculator {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: white;
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+.gpa-header {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gpa-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+  cursor: default;
+}
+
+/* Decrypted Text Styles */
+.gpa-header .decrypted {
+  color: #ffffff;
+  transition: color 0.2s ease;
+}
+
+.gpa-header .encrypted {
+  color: #14b8a6;
+  transition: color 0.2s ease;
+}
+
+/* Light mode styles for decrypted text */
+:root[class~="light-mode"] .gpa-header .decrypted {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .gpa-header .encrypted {
+  color: #14b8a6;
+}
+
+.gpa-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  flex: 1;
+  margin-bottom: 2rem;
+  height: calc(100% - 4rem);
+  min-height: min-content;
+}
+
+/* Grade Reference Table */
+.grade-reference {
+  background: linear-gradient(180deg, rgba(3, 7, 18, 0.7) 0%, rgba(3, 7, 18, 0.5) 100%);
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  height: calc(100vh - 14.2rem);
+  min-height: min-content;
+  overflow: auto;
+  box-shadow: inset 0 0 20px rgba(20, 184, 166, 0.03);
+}
+
+.grade-reference h2 {
+  font-size: 1.1rem;
+  margin: 0 0 1.25rem 0;
+  color: #14b8a6;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(20, 184, 166, 0.1);
+  letter-spacing: 0.02em;
+  position: relative;
+}
+
+.grade-reference h2::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(20, 184, 166, 0.1) 0%,
+    rgba(20, 184, 166, 0.4) 25%,
+    #14b8a6 50%,
+    rgba(20, 184, 166, 0.4) 75%,
+    rgba(20, 184, 166, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: gradientMove 3s linear infinite;
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.grade-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.grade-table th,
+.grade-table td {
+  padding: 0.75rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+/* Column-specific alignment */
+.grade-table th:first-child,
+.grade-table td:first-child {
+  text-align: left;
+  padding-left: 1rem;
+}
+
+.grade-table th {
+  font-weight: 600;
+  color: #14b8a6;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem;
+  background: rgba(20, 184, 166, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.grade-table th:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.grade-table th:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.grade-table td {
+  font-size: 0.9rem;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(20, 184, 166, 0.1);
+  position: relative;
+}
+
+.grade-table tr {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.grade-table tr:last-child td {
+  border-bottom: none;
+}
+
+.grade-table tr:hover {
+  transform: translateX(4px);
+}
+
+.grade-table tr:hover td {
+  background: rgba(20, 184, 166, 0.08);
+}
+
+/* Column-specific styles */
+.grade-table td:first-child {
+  font-weight: 600;
+  color: #14b8a6;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.grade-table td:nth-child(2) {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.grade-table td:last-child {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(20, 184, 166, 0.05);
+}
+
+/* Light mode styles */
+:root[class~="light-mode"] .grade-reference {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, #ffffff 100%);
+  box-shadow: inset 0 0 20px rgba(20, 184, 166, 0.05);
+}
+
+:root[class~="light-mode"] .grade-table td {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .grade-table td:nth-child(2) {
+  color: rgba(31, 41, 55, 0.9);
+}
+
+:root[class~="light-mode"] .grade-table td:last-child {
+  color: rgba(31, 41, 55, 0.9);
+  background: rgba(20, 184, 166, 0.05);
+}
+
+:root[class~="light-mode"] .grade-table tr:hover td {
+  background: rgba(20, 184, 166, 0.08);
+}
+
+/* Scrollbar styling specific to grade reference */
+.grade-reference::-webkit-scrollbar {
+  width: 6px;
+}
+
+.grade-reference::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+  margin: 0.5rem;
+}
+
+.grade-reference::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(20, 184, 166, 0.3) 0%, rgba(20, 184, 166, 0.2) 100%);
+  border-radius: 3px;
+  border: none;
+}
+
+.grade-reference::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(20, 184, 166, 0.4) 0%, rgba(20, 184, 166, 0.3) 100%);
+}
+
+.grade-reference {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(20, 184, 166, 0.2) transparent;
+}
+
+/* Calculator Section */
+.calculator-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: calc(100vh - 13.7rem);
+  min-height: min-content;
+}
+
+.subjects-input {
+  background: rgba(3, 7, 18, 0.5);
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 12px;
+  padding: 1rem 1.5rem 1.5rem;
+  height: calc(100% - 8.5rem);
+  overflow: auto;
+}
+
+.subjects-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.subjects-table th,
+.subjects-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(20, 184, 166, 0.1);
+}
+
+.subjects-table th {
+  font-weight: 600;
+  color: #14b8a6;
+  font-size: 0.9rem;
+  position: sticky;
+  top: -1px;
+  background: rgba(3, 7, 18, 0.95);
+  z-index: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  backdrop-filter: blur(8px);
+}
+
+.subjects-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.subjects-table td {
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  background: rgba(3, 7, 18, 0.5);
+}
+
+.subjects-table td:first-child {
+  color: #14b8a6;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+}
+
+.subjects-table input,
+.subjects-table select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 8px;
+  background: rgba(3, 7, 18, 0.7);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.subjects-table select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 8px;
+  background: rgba(3, 7, 18, 0.7);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2314b8a6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+.subjects-table select:hover {
+  background-color: rgba(3, 7, 18, 0.9);
+  border-color: rgba(20, 184, 166, 0.4);
+}
+
+.subjects-table select:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+  background-color: rgba(3, 7, 18, 0.9);
+}
+
+/* Style for select options */
+.subjects-table select option {
+  background-color: rgba(3, 7, 18, 0.95);
+  color: #ffffff;
+  padding: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.subjects-table select option:hover,
+.subjects-table select option:focus,
+.subjects-table select option:active,
+.subjects-table select option:checked {
+  background-color: rgba(20, 184, 166, 0.2);
+  color: #14b8a6;
+}
+
+/* Light mode styles for select */
+:root[class~="light-mode"] .subjects-table select {
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .subjects-table select:hover {
+  background-color: #f8fafc;
+}
+
+:root[class~="light-mode"] .subjects-table select:focus {
+  background-color: #ffffff;
+}
+
+:root[class~="light-mode"] .subjects-table select option {
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .subjects-table select option:hover,
+:root[class~="light-mode"] .subjects-table select option:focus,
+:root[class~="light-mode"] .subjects-table select option:active,
+:root[class~="light-mode"] .subjects-table select option:checked {
+  background-color: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
+}
+
+/* Adjust input styles to match new select styles */
+.subjects-table input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 8px;
+  background: rgba(3, 7, 18, 0.7);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.subjects-table input:hover {
+  background-color: rgba(3, 7, 18, 0.9);
+  border-color: rgba(20, 184, 166, 0.4);
+}
+
+.subjects-table input:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+  background-color: rgba(3, 7, 18, 0.9);
+}
+
+:root[class~="light-mode"] .subjects-table input {
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .subjects-table input:hover {
+  background-color: #f8fafc;
+}
+
+:root[class~="light-mode"] .subjects-table input:focus {
+  background-color: #ffffff;
+}
+
+.subjects-table input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.subjects-table tr {
+  transition: all 0.2s ease;
+}
+
+.subjects-table tr:hover {
+  background: rgba(20, 184, 166, 0.05);
+}
+
+.subjects-table tr:hover td:first-child {
+  color: #14b8a6;
+  opacity: 1;
+}
+
+/* Results Dashboard */
+.results-dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  height: 7rem;
+}
+
+.result-card {
+  background: rgba(3, 7, 18, 0.5);
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.result-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.1);
+  border-color: rgba(20, 184, 166, 0.4);
+}
+
+.result-card h3 {
+  font-size: 0.85rem;
+  color: #14b8a6;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.result-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+/* Action Button */
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  color: #14b8a6;
+}
+
+.action-button:hover {
+  background: rgba(20, 184, 166, 0.1);
+}
+
+.reset-button {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.2);
+  color: #ef4444;
+}
+
+.reset-button:hover {
+  background: rgba(220, 38, 38, 0.2);
+}
+
+/* Light Mode Styles */
+:root[class~="light-mode"] .gpa-calculator {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .gpa-header h1 {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .grade-reference,
+:root[class~="light-mode"] .subjects-input,
+:root[class~="light-mode"] .result-card {
+  background: #ffffff;
+  border-color: rgba(20, 184, 166, 0.2);
+}
+
+:root[class~="light-mode"] .grade-table td,
+:root[class~="light-mode"] .subjects-table input,
+:root[class~="light-mode"] .subjects-table select {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .subjects-table input,
+:root[class~="light-mode"] .subjects-table select {
+  background: #ffffff;
+}
+
+:root[class~="light-mode"] .result-value {
+  color: #1f2937;
+}
+
+/* Responsive Design */
+@media (max-width: 1366px) {
+  .gpa-layout {
+    grid-template-columns: 250px 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .gpa-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .gpa-layout {
+    grid-template-columns: 1fr;
+    margin-bottom: 6rem;
+    height: auto;
+    min-height: min-content;
+  }
+
+  .results-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .gpa-calculator {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .grade-reference,
+  .calculator-section {
+    height: auto;
+    min-height: min-content;
+  }
+}
+
+/* Scrollbar Styling */
+.grade-reference::-webkit-scrollbar,
+.subjects-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.grade-reference::-webkit-scrollbar-track,
+.subjects-input::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.grade-reference::-webkit-scrollbar-thumb,
+.subjects-input::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  border: none;
+}
+
+.grade-reference::-webkit-scrollbar-thumb:hover,
+.subjects-input::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.grade-reference,
+.subjects-input {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.subjects-table input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.subjects-table input[type="number"]::-webkit-outer-spin-button,
+.subjects-table input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.subjects-table input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 8px;
+  background: rgba(3, 7, 18, 0.7);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-align: left;
+} 

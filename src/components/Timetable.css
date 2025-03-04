@@ -24,7 +24,34 @@
   color: #ffffff;
   display: flex;
   align-items: center;
-  white-space: nowrap;
+  gap: 1rem;
+  cursor: default;
+}
+
+/* Decrypted Text Styles */
+.timetable-header .decrypted {
+  color: #ffffff;
+  transition: color 0.2s ease;
+}
+
+.timetable-header .encrypted {
+  color: #14b8a6;
+  transition: color 0.2s ease;
+}
+
+/* Light mode styles for decrypted text */
+:root[class~="light-mode"] .timetable-header .decrypted {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .timetable-header .encrypted {
+  color: #14b8a6;
+}
+
+/* Remove old decrypted text styles */
+.decrypted-text-revealed,
+.decrypted-text-encrypted {
+  display: none;
 }
 
 .title-container {
@@ -40,7 +67,7 @@
 .draft-tag {
   background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(20, 184, 166, 0.1));
   color: #14b8a6;
-  padding: 0.35rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -677,7 +704,7 @@
 .course-title-icons {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
   padding: 0.25rem;
 }
 
@@ -1127,21 +1154,135 @@
 /* Add footer credit styles */
 .footer-credit {
   text-align: center;
-  color: #adadad;
-  font-size: 0.75rem;
-  padding: 0rem 0;
-  margin-top: -1rem;
-  font-style: italic;
-  letter-spacing: 0.02rem;
-  font-weight: 500;
+  padding: 0.5rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: auto;
+  background: transparent;
 }
 
-.footer-credit a {
+.social-link {
   color: #14b8a6;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: rgba(20, 184, 166, 0.1);
+  z-index: 2;
+  transform: translateY(0);
 }
 
-.footer-credit a:hover {
-  color: #0d9488;
+.social-link:hover {
+  color: #ffffff;
+  background: rgba(20, 184, 166, 0.2);
+  transform: translateY(-2px);
+  filter: drop-shadow(0 4px 12px rgba(20, 184, 166, 0.3));
+}
+
+/* Confirmation Dialog Styles */
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.confirm-dialog-overlay.dialog-closing {
+  opacity: 0;
+}
+
+.confirm-dialog {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.confirm-dialog.dialog-closing {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.confirm-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.confirm-dialog-title {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.confirm-dialog-content {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.confirm-dialog-button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid;
+}
+
+.confirm-dialog-button.cancel {
+  background: transparent;
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.confirm-dialog-button.cancel:hover {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.confirm-dialog-button.confirm {
+  background: rgba(239, 68, 68, 0.1);
+  color: rgb(239, 68, 68);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.confirm-dialog-button.confirm:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
 }
