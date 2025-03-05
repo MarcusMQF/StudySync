@@ -84,6 +84,7 @@
   flex: 1;
   min-height: 0;
   height: 100%;
+  min-width: 0;
 }
 
 .course-panel {
@@ -411,8 +412,33 @@
   height: calc(100% + 15px);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: auto;
   position: relative;
+  min-width: 900px;
+}
+
+/* Horizontal scrollbar styles for timetable grid */
+.timetable-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.timetable-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.timetable-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.timetable-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Firefox scrollbar for timetable grid */
+.timetable-grid {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 .days-header {
@@ -802,6 +828,12 @@
   .timetable-layout {
     grid-template-columns: 250px 1fr;
   }
+
+  .timetable-grid-wrapper {
+    overflow-x: auto;
+    margin: 0 -1rem; /* Compensate for container padding */
+    padding: 0 1rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -819,10 +851,15 @@
   }
 
   .timetable-grid {
-    overflow-x: auto;
     border-radius: 12px;
     border: 1px solid rgba(20, 184, 166, 0.2);
     flex: 1;
+  }
+
+  .timetable-grid-wrapper {
+    overflow-x: auto;
+    margin: 0 -1rem;
+    padding: 0 1rem;
   }
 
   .timetable-header {
@@ -1353,4 +1390,55 @@
 .confirm-dialog-button.confirm:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Add horizontal scrollbar styles */
+@media (max-width: 1200px) {
+  .timetable-layout::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  .timetable-layout::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .timetable-layout::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+
+  .timetable-layout::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Firefox */
+  .timetable-layout {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }
+}
+
+/* Scrollbar styles for the wrapper */
+.timetable-grid-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.timetable-grid-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.timetable-grid-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.timetable-grid-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Firefox */
+.timetable-grid-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
