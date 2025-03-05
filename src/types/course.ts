@@ -3,6 +3,7 @@ export interface CourseSession {
   time: string;
   venue: string;
   lecturer: string;
+  activityType: string;
 }
 
 export interface CourseOccurrence {

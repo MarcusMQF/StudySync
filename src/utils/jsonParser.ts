@@ -106,7 +106,8 @@ const convertTimeEditDataToCourses = (
               day: activity.dayOfWeek.toUpperCase(),
               time: `${activity.startTime} - ${activity.endTime}`,
               venue: activity.room || 'No venue specified',
-              lecturer: formatLecturerName(activity.lecturer)
+              lecturer: formatLecturerName(activity.lecturer),
+              activityType: activityType
             };
 
             const occurrence = occurrenceMap.get(occNum)!;

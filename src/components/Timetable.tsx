@@ -355,7 +355,7 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
         venue: session.venue,
         lecturer: session.lecturer,
         day: standardizedDay,
-        activityType: occurrence.activityType
+        activityType: session.activityType
       };
 
       setTimetableOccurrences(prev => {
@@ -614,9 +614,6 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
                         <div className="occurrence-number">
                           <div className="tag-group">
                             <span>Occurrence {occurrence.occurrenceNumber}</span>
-                            {occurrence.activityType && (
-                              <span className="activity-type">{occurrence.activityType}</span>
-                            )}
                           </div>
                           {addedOccurrences[course.id] === index.toString() ? (
                             <button 
@@ -652,6 +649,9 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
                               {session.day && session.time ? (
                                 <>
                                   {session.day}, {session.time}
+                                  {session.activityType && (
+                                    <span className="activity-type">{session.activityType}</span>
+                                  )}
                                 </>
                               ) : (
                                 <span className="incomplete-details">{session.day || 'No day and time specified'}</span>
