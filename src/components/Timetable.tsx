@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo, FaExclamationTriangle, FaLinkedin} from 'react-icons/fa';
+import { FaSearch, FaClock, FaMapMarkerAlt, FaUser, FaChevronDown, FaChevronUp, FaPlus, FaTrash, FaDownload, FaUndo, FaExclamationTriangle} from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import './Timetable.css';
 import DecryptedText from './DecryptedText';
@@ -766,12 +766,6 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="footer-credit">
-        <a href="https://www.linkedin.com/in/mah-qing-fung/" target="_blank" rel="noopener noreferrer" className="social-link">
-          <FaLinkedin size={20} />
-        </a>
       </div>
     </div>
   );
