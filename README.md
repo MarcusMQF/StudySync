@@ -1,23 +1,40 @@
 <div align="center">
   <img src="/public/studysync.png" alt="StudySync Logo" width="120" height="120" />
-  <h1>StudySync</h1>
+  <h1>STUDYSYNC</h1>
   <p>A modern academic planning platform that helps students organize their university life efficiently.</p>
 
-  <div>
-    <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React 19" />
-    <img src="https://img.shields.io/badge/TypeScript-5.2-blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Vite-5.0-blue?style=for-the-badge&logo=vite" alt="Vite" />
-    <img src="https://img.shields.io/github/last-commit/MarcusMQF/StudySync?style=for-the-badge&color=green" alt="Last Commit" />
-    <a href="./LICENSE">
-      <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
-    </a>
-  </div>
+  [![React][react-badge]][react-url]
+  [![TypeScript][ts-badge]][ts-url]
+  [![Vite][vite-badge]][vite-url]
+  [![Last Commit][commit-badge]][repo-url]
+  [![License][license-badge]][license-url]
 </div>
 
-## Description
+[react-badge]: https://img.shields.io/badge/React-19-blue.svg "React version"
+[ts-badge]: https://img.shields.io/badge/TypeScript-5.2-blue.svg "TypeScript version"
+[vite-badge]: https://img.shields.io/badge/Vite-5.0-646CFF.svg "Vite version"
+[commit-badge]: https://img.shields.io/github/last-commit/MarcusMQF/StudySync.svg "Last Commit"
+[license-badge]: https://img.shields.io/badge/License-MIT-green.svg "License"
 
-StudySync is a comprehensive academic planning tool designed specifically for University of Malaya students. It automatically loads and synchronizes with the latest course data from UM's TimeEdit system, providing real-time access to all available courses, their schedules, and occurrences.
-Note: Course data is retrieved from the UM TimeEdit system from time to time and may not be up to date.
+[react-url]: https://reactjs.org/
+[ts-url]: https://www.typescriptlang.org/
+[vite-url]: https://vitejs.dev/
+[repo-url]: https://github.com/MarcusMQF/StudySync
+[license-url]: ./LICENSE
+
+## Description
+StudySync is a comprehensive academic planning tool designed specifically for University of Malaya students. It automatically synchronizes with UM's TimeEdit system, providing real-time access to course data, schedules, and occurrences.
+
+```typescript
+// Example usage of course selection
+const course = {
+  code: "WXES2116",
+  name: "Programming II",
+  occurrence: "1",
+  schedule: "Monday 10:00 AM - 12:00 PM",
+  venue: "FSK Lab 1"
+};
+```
 
 ### 🗃️ Data Integration
 - **Real-time Course Data**: Integrates with UM TimeEdit system to provide up-to-date course information
@@ -26,28 +43,22 @@ Note: Course data is retrieved from the UM TimeEdit system from time to time and
 
 - [UM Timetable SDK](https://github.com/damnitjoshua/um-timetable-sdk) - Providing the foundation for TimeEdit data parsing and structuring.
 
-## Features
+## Key Features
 
-- 📅 **Interactive Timetable**
-  - Drag-and-drop course scheduling
-  - Multiple occurrence management
-  - Conflict detection and warnings
-  - Automatic time slot organization
-  - Real-time sync with UM TimeEdit data
+### 📅 Interactive Timetable
+- Drag-and-drop course scheduling
+- Multiple occurrence management
+- Real-time conflict detection
+- Automatic time slot organization
+- Live sync with UM TimeEdit data
 
-- 🎯 **GPA Calculator**
-  - Real-time GPA calculation
-  - Grade tracking and prediction
-  - Semester-wise breakdown
-  - Target GPA planning
+### 🎯 GPA Calculator
+- Real-time GPA calculation
+- Grade tracking and prediction
+- Semester-wise breakdown
+- Target GPA planning
 
-- 🤖 **AI Assistant**
-  - Intelligent study recommendations
-  - Course planning assistance
-  - Academic goal tracking
-  - Personalized learning insights
-
-## Technologies Used
+## Technology Stack
 
 | Category | Technologies |
 |----------|-------------|
@@ -59,49 +70,37 @@ Note: Course data is retrieved from the UM TimeEdit system from time to time and
 
 ## Benefits
 
-- 🕝 **Time Management**
-  - Visual schedule organization
-  - Quick access to class information
-  - Efficient course planning
+### Time Management
+- Visual schedule organization
+- Quick access to class information
+- Efficient course planning
 
-- 💖 **User Experience**
-  - Clean, modern interface
-  - Dark mode by default
-  - Responsive on all devices
-  - Intuitive navigation
+### User Experience
+- Clean, modern interface
+- Dark mode by default
+- Responsive design
+- Intuitive navigation
 
-## How It Works
+## Updates & Maintenance
 
-1. 🗂️ **Course Management**
-   - Select modules and preferred occurrences from available options
-   - Resolve scheduling conflicts automatically
-   - Save and export personalized timetable
-   - Stay updated with latest course changes
-
-2. 📈 **GPA Calculator**
-   - Enter course grades
-   - View calculated GPA
-   - Set academic targets
-
-3. 🤖 **AI Assistance**
-   - Get personalized advice
-   - Optimize study schedule
-   - Receive course recommendations
-   - Track learning progress
-
-## Updates
-
-StudySync is actively maintained and regularly updated to ensure compatibility with the UM TimeEdit system. Updates include:
-- Latest course data synchronization
-- New feature implementations
-- Bug fixes and performance improvements
+StudySync is actively maintained with regular updates including:
+- Course data synchronization
+- Feature implementations
+- Performance improvements
 - UI/UX enhancements
 
 Stay tuned for regular updates by watching or starring ⭐ this repository!
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Author
+
 - Marcus Mah Qing Fung
+
+---
+
+<div align="center">
+  <strong>Made with ❤️ for University of Malaya students</strong>
+</div>
