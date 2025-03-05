@@ -41,21 +41,17 @@ const course = {
 - **Automatic Updates**: Course data is regularly updated to reflect the latest changes from TimeEdit
 - **Comprehensive Coverage**: Includes all faculties, courses, and their respective occurrences
 
-- [UM Timetable SDK](https://github.com/damnitjoshua/um-timetable-sdk) - Providing the foundation for TimeEdit data parsing and structuring.
-
 ## Key Features
 
 ### 📅 Interactive Timetable
-- Drag-and-drop course scheduling
+- Course scheduling by adding occurrences
 - Multiple occurrence management
-- Real-time conflict detection
-- Automatic time slot organization
-- Live sync with UM TimeEdit data
+- Conflict detection
+- Save & Download your timetable as png
+- Sync with UM TimeEdit data
 
 ### 🎯 GPA Calculator
-- Real-time GPA calculation
-- Grade tracking and prediction
-- Semester-wise breakdown
+- GPA Calculation
 - Target GPA planning
 
 ## Technology Stack
@@ -79,7 +75,6 @@ const course = {
 - Clean, modern interface
 - Dark mode by default
 - Responsive design
-- Intuitive navigation
 
 ## Updates & Maintenance
 
@@ -94,10 +89,6 @@ Stay tuned for regular updates by watching or starring ⭐ this repository!
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Author
-
-- Marcus Mah Qing Fung
 
 ---
 
