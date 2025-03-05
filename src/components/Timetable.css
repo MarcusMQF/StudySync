@@ -404,10 +404,23 @@
 }
 
 .course-block .detail-text {
-  white-space: normal;
-  word-wrap: break-word;
-  line-height: 1.4;
-  max-width: 100%;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+/* Hover effect to show full text in course block */
+.course-block .detail-row:hover .detail-text {
+  position: relative;
+  overflow: visible;
+  background: #1f2937;
+  z-index: 10;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: -4px -8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(20, 184, 166, 0.2);
 }
 
 .timetable-grid {
@@ -689,14 +702,20 @@
 
 .detail-text {
   color: #94a3b8;
-  font-size: 0.7rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 12px;
-  display: flex;
-  align-items: flex-start;
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.4;
   flex: 1;
   min-width: 0;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding-top: 2px;
 }
 
 /* Horizontal scrollbar styles */

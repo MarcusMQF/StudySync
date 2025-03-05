@@ -1,10 +1,22 @@
 import { Course, CourseOccurrence, CourseSession } from '../types/course';
 
+interface LecturerInfo {
+  lecturerId: string;
+  fullName: string;
+  title: string;
+  email: string;
+  jobTitle: string;
+  jobCategory: string;
+  facultyCode: string;
+  departmentCode: string;
+}
+
 interface TimeEditActivity {
   dayOfWeek: string;
   startTime: string;
   endTime: string;
   room: string;
+  lecturer?: LecturerInfo;
   occurrences: string[];
 }
 
@@ -15,6 +27,11 @@ interface TimeEditData {
     [key: string]: TimeEditActivity[];
   };
 }
+
+const formatLecturerName = (lecturer: LecturerInfo | undefined): string => {
+  if (!lecturer) return 'No lecturer specified';
+  return `${lecturer.title} ${lecturer.fullName}`;
+};
 
 export const loadCoursesFromJson = async (): Promise<Course[]> => {
   let totalCourses = 0;
@@ -89,7 +106,7 @@ const convertTimeEditDataToCourses = (
               day: activity.dayOfWeek.toUpperCase(),
               time: `${activity.startTime} - ${activity.endTime}`,
               venue: activity.room || 'No venue specified',
-              lecturer: ''
+              lecturer: formatLecturerName(activity.lecturer)
             };
 
             const occurrence = occurrenceMap.get(occNum)!;

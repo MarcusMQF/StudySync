@@ -668,7 +668,7 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
                                   whiteSpace: 'pre-wrap',
                                   wordBreak: 'break-word',
                                   display: 'block'
-                                }}>{session.lecturer || 'No lecturer specified'}</span>
+                                }}>{session.lecturer}</span>
                               </div>
                             </div>
                           </div>
@@ -750,9 +750,7 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
                               <div className="detail-row">
                                 <FaUser className="detail-icon" />
                                 <span className="detail-text">
-                                  {occurrence.lecturer ? 
-                                    occurrence.lecturer.split(/[,;]/).map(l => l.trim())[0] : 
-                                    'No lecturer specified'}
+                                  {occurrence.lecturer}
                                 </span>
                               </div>
                             </div>
