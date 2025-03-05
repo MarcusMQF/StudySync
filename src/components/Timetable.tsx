@@ -684,83 +684,85 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
 
         {/* Right Panel - Timetable Grid */}
         <div className="timetable-grid" ref={timetableRef}>
-          <div className="days-header">
-            <div className="day-header"></div>
-            {days.map((day) => (
-              <div key={day} className="day-header">{day}</div>
-            ))}
-          </div>
-          
-          <div className="grid-scroll-container">
-            <div className="time-column">
-              {timeSlots.map((time) => (
-                <div key={time} className="time-label">{time}</div>
-              ))}
-            </div>
-
-            <div className="grid-lines">
-              <div className="horizontal-lines">
-                {Array.from({ length: 13 }, (_, i) => (
-                  <div key={i} className="horizontal-line"></div>
+          <div className="grid-wrapper">
+            <div className="grid-scroll-container">
+              <div className="days-header">
+                <div className="day-header"></div>
+                {days.map((day) => (
+                  <div key={day} className="day-header">{day}</div>
                 ))}
               </div>
-              <div className="vertical-lines">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <div key={i} className="vertical-line"></div>
+
+              <div className="time-column">
+                {timeSlots.map((time) => (
+                  <div key={time} className="time-label">{time}</div>
                 ))}
               </div>
-            </div>
 
-            <div className="grid-content">
-              {days.map((day) => (
-                <div key={day} className="day-column">
-                  {timetableOccurrences[day.toUpperCase()]?.map((occurrence, index) => {
-                    const [startTime, endTime] = occurrence.time.split(' - ');
-                    const topPosition = calculateTimePosition(startTime);
-                    const blockHeight = calculateBlockHeight(startTime, endTime);
+              <div className="grid-lines">
+                <div className="horizontal-lines">
+                  {Array.from({ length: 13 }, (_, i) => (
+                    <div key={i} className="horizontal-line"></div>
+                  ))}
+                </div>
+                <div className="vertical-lines">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <div key={i} className="vertical-line"></div>
+                  ))}
+                </div>
+              </div>
 
-                    return (
-                      <div 
-                        key={`${occurrence.courseId}-${occurrence.occurrenceNumber}-${index}`} 
-                        className="course-block"
-                        style={{
-                          top: `${topPosition}px`,
-                          height: `${blockHeight}px`,
-                          backgroundColor: courseColors[occurrence.courseId]?.bg || 'rgba(20, 184, 166, 0.15)',
-                          borderColor: courseColors[occurrence.courseId]?.border || 'rgba(20, 184, 166, 0.3)'
-                        }}
-                      >
-                        <div className="course-block-content">
-                          <div className="course-header-row">
-                            <span className="course-code">{occurrence.courseCode}</span>
-                            <div className="tags-container">
-                              <span className="occ-tag">OCC {occurrence.occurrenceNumber}</span>
-                              {occurrence.activityType && (
-                                <span className="activity-type" style={{ marginLeft: '4px' }}>{occurrence.activityType}</span>
-                              )}
+              <div className="grid-content">
+                {days.map((day) => (
+                  <div key={day} className="day-column">
+                    {timetableOccurrences[day.toUpperCase()]?.map((occurrence, index) => {
+                      const [startTime, endTime] = occurrence.time.split(' - ');
+                      const topPosition = calculateTimePosition(startTime);
+                      const blockHeight = calculateBlockHeight(startTime, endTime);
+
+                      return (
+                        <div 
+                          key={`${occurrence.courseId}-${occurrence.occurrenceNumber}-${index}`} 
+                          className="course-block"
+                          style={{
+                            top: `${topPosition}px`,
+                            height: `${blockHeight}px`,
+                            backgroundColor: courseColors[occurrence.courseId]?.bg || 'rgba(20, 184, 166, 0.15)',
+                            borderColor: courseColors[occurrence.courseId]?.border || 'rgba(20, 184, 166, 0.3)'
+                          }}
+                        >
+                          <div className="course-block-content">
+                            <div className="course-header-row">
+                              <span className="course-code">{occurrence.courseCode}</span>
+                              <div className="tags-container">
+                                <span className="occ-tag">OCC {occurrence.occurrenceNumber}</span>
+                                {occurrence.activityType && (
+                                  <span className="activity-type" style={{ marginLeft: '4px' }}>{occurrence.activityType}</span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <div className="course-name">{occurrence.courseName}</div>
-                          <div className="course-details">
-                            <div className="detail-row">
-                              <FaMapMarkerAlt className="detail-icon" />
-                              <span className="detail-text">{occurrence.venue}</span>
-                            </div>
-                            <div className="detail-row">
-                              <FaUser className="detail-icon" />
-                              <span className="detail-text">
-                                {occurrence.lecturer ? 
-                                  occurrence.lecturer.split(/[,;]/).map(l => l.trim())[0] : 
-                                  'No lecturer specified'}
-                              </span>
+                            <div className="course-name">{occurrence.courseName}</div>
+                            <div className="course-details">
+                              <div className="detail-row">
+                                <FaMapMarkerAlt className="detail-icon" />
+                                <span className="detail-text">{occurrence.venue}</span>
+                              </div>
+                              <div className="detail-row">
+                                <FaUser className="detail-icon" />
+                                <span className="detail-text">
+                                  {occurrence.lecturer ? 
+                                    occurrence.lecturer.split(/[,;]/).map(l => l.trim())[0] : 
+                                    'No lecturer specified'}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

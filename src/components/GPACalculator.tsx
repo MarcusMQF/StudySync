@@ -117,7 +117,7 @@ export const GPACalculator = ({ setIsExpanded }: GPACalculatorProps) => {
       <div className="gpa-layout">
         {/* Left Panel - Grade Table */}
         <div className="grade-reference">
-          <h2>Grade Reference</h2>
+          <h2>UM Grade Reference</h2>
           <table className="grade-table">
             <thead>
               <tr>

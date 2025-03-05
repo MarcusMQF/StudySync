@@ -84,7 +84,7 @@
   flex: 1;
   min-height: 0;
   height: 100%;
-  min-width: 0;
+  min-width: 0; /* Allow container to shrink */
 }
 
 .course-panel {
@@ -412,33 +412,29 @@
   height: calc(100% + 15px);
   display: flex;
   flex-direction: column;
-  overflow-x: auto;
   position: relative;
-  min-width: 900px;
+  overflow: hidden;
 }
 
-/* Horizontal scrollbar styles for timetable grid */
-.timetable-grid::-webkit-scrollbar {
-  height: 6px;
+.grid-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  height: 100%;
 }
 
-.timetable-grid::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.timetable-grid::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.timetable-grid::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Firefox scrollbar for timetable grid */
-.timetable-grid {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+.grid-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: 0;
+  position: relative;
+  scrollbar-gutter: stable;
+  height: calc(100vh - 200px);
+  padding-right: 6px;
+  margin-right: -6px;
 }
 
 .days-header {
@@ -450,7 +446,9 @@
   background: #030712;
   position: sticky;
   top: 0;
+  left: 80px;
   z-index: 2;
+  min-width: 700px;
 }
 
 .day-header {
@@ -462,15 +460,10 @@
   background: #030712;
 }
 
-.grid-scroll-container {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-  position: relative;
-  margin-right: -0.30rem;
-  padding-right: 0.30rem;
-  scrollbar-gutter: stable;
-  height: calc(100vh - 200px);
+.day-header:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
 }
 
 .time-column {
@@ -497,6 +490,7 @@
   letter-spacing: 0.1em;
   box-sizing: border-box;
   transform: translateY(-10px);
+  margin-top: 3.6rem;
 }
 
 /* Special styling for the first time label (8:00) */
@@ -511,9 +505,8 @@
 
 .grid-content {
   margin-left: 80px;
-  margin-right: 6px;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
   height: 1820px;
   position: relative;
   border-radius: 8px;
@@ -521,6 +514,8 @@
   background: #030712;
   border: 1px solid rgba(20, 184, 166, 0.8);
   box-sizing: border-box;
+  min-width: 620px;
+  margin-right: 6px; /* Add margin to prevent border cut-off */
 }
 
 .day-column {
@@ -541,10 +536,12 @@
   position: absolute;
   top: 0;
   left: 80px;
-  right: 0;
+  right: 12px; /* Match the margin-right of grid-content */
   height: 1820px;
   pointer-events: none;
   z-index: 1;
+  min-width: 620px;
+  width: calc(100% - 92px); /* 80px for time column + 12px for right margin */
 }
 
 .horizontal-lines {
@@ -555,8 +552,9 @@
   height: 1820px;
   display: flex;
   flex-direction: column;
-  width: calc(100% - 10px);
+  width: 100%;
   margin: 0;
+  margin-top: 3.55rem;
 }
 
 .horizontal-line {
@@ -694,14 +692,15 @@
   min-width: 0;
 }
 
-/* Scrollbar styling */
+/* Horizontal scrollbar styles */
 .grid-scroll-container::-webkit-scrollbar {
-  width: 6px;
   height: 6px;
+  width: 6px;
 }
 
 .grid-scroll-container::-webkit-scrollbar-track {
   background: transparent;
+  margin: 0 3px; /* Add margin to prevent scrollbar touching border */
 }
 
 .grid-scroll-container::-webkit-scrollbar-thumb {
@@ -888,7 +887,9 @@
   .warning-modal,
   .confirm-dialog {
     padding: 1rem;
-    max-width: 85%;
+    max-width: 90%;
+    width: 90%;
+    margin: 0 1rem;
   }
 
   .warning-header,
@@ -946,8 +947,10 @@
 
   .warning-modal,
   .confirm-dialog {
-    max-width: 95%;
     padding: 0.875rem;
+    max-width: calc(100% - 2rem);
+    width: 100%;
+    margin: 0 1rem;
   }
 
   .warning-content,
@@ -958,6 +961,27 @@
   .warning-button,
   .confirm-dialog-button {
     padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+  }
+
+  .warning-header,
+  .confirm-dialog-header {
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .warning-icon {
+    font-size: 1.1rem;
+  }
+
+  .warning-title,
+  .confirm-dialog-title {
+    font-size: 0.95rem;
+  }
+
+  .conflict-days {
+    padding: 0.5rem;
+    margin: 0.5rem 0;
     font-size: 0.8rem;
   }
 }
@@ -1120,66 +1144,73 @@
   font-weight: 500;
 }
 
-.modal-overlay {
+.modal-overlay,
+.confirm-dialog-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(3, 7, 18, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   opacity: 1;
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.2s ease;
+  backdrop-filter: blur(4px);
 }
 
-.modal-overlay.modal-closing {
+.modal-overlay.modal-closing,
+.confirm-dialog-overlay.dialog-closing {
   opacity: 0;
 }
 
-.warning-modal {
-  background: #1a1a1a;
+.warning-modal,
+.confirm-dialog {
+  background: #030712;
   border-radius: 12px;
   padding: 1.5rem;
   max-width: 500px;
   width: 90%;
   border: 1px solid rgba(20, 184, 166, 0.2);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   transform: translateY(0);
   opacity: 1;
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transition: all 0.2s ease;
 }
 
-.warning-modal.warning-modal-closing {
+.warning-modal.warning-modal-closing,
+.confirm-dialog.dialog-closing {
   transform: translateY(20px);
   opacity: 0;
 }
 
-.warning-header {
+.warning-header,
+.confirm-dialog-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+  border-bottom: 1px solid rgba(20, 184, 166, 0.2);
 }
 
 .warning-icon {
-  color: rgb(239, 68, 68);
+  color: #14b8a6;
   font-size: 1.5rem;
-  animation: pulse 2s infinite;
 }
 
-.warning-title {
+.warning-title,
+.confirm-dialog-title {
   color: #ffffff;
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
 }
 
-.warning-content {
+.warning-content,
+.confirm-dialog-content {
   color: #94a3b8;
   font-size: 0.9rem;
   line-height: 1.5;
@@ -1187,8 +1218,8 @@
 }
 
 .conflict-days {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(20, 184, 166, 0.2);
   border-radius: 8px;
   padding: 0.75rem;
   margin: 0.75rem 0;
@@ -1196,32 +1227,52 @@
   font-size: 0.9rem;
 }
 
-.warning-actions {
+.warning-actions,
+.confirm-dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 1rem;
 }
 
-.warning-button {
+.warning-button,
+.confirm-dialog-button {
   padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.warning-button.primary {
+.warning-button.primary,
+.confirm-dialog-button.confirm {
   background: rgba(239, 68, 68, 0.1);
   color: rgb(239, 68, 68);
   border-color: rgba(239, 68, 68, 0.2);
 }
 
-.warning-button.primary:hover {
+.warning-button.primary:hover,
+.confirm-dialog-button.confirm:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.3);
+}
+
+.warning-button.secondary,
+.confirm-dialog-button.cancel {
+  background: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
+  border-color: rgba(20, 184, 166, 0.2);
+}
+
+.warning-button.secondary:hover,
+.confirm-dialog-button.cancel:hover {
+  background: rgba(20, 184, 166, 0.15);
+  border-color: rgba(20, 184, 166, 0.3);
 }
 
 @keyframes fadeIn {
@@ -1294,50 +1345,13 @@
 }
 
 /* Confirmation Dialog Styles */
-.confirm-dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  opacity: 1;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.confirm-dialog-overlay.dialog-closing {
-  opacity: 0;
-}
-
-.confirm-dialog {
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 1.5rem;
-  max-width: 400px;
-  width: 90%;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transform: translateY(0);
-  opacity: 1;
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-}
-
-.confirm-dialog.dialog-closing {
-  transform: translateY(20px);
-  opacity: 0;
-}
-
 .confirm-dialog-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+  border-bottom: 1px solid rgba(20, 184, 166, 0.2);
 }
 
 .confirm-dialog-title {
