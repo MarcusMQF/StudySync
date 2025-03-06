@@ -194,13 +194,22 @@ interface TimetableProps {
 export const Timetable = ({ setIsExpanded }: TimetableProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Course[]>([]);
-  const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<Course[]>(() => {
+    const saved = localStorage.getItem('selectedCourses');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [expandedCourses, setExpandedCourses] = useState<string[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [timetableOccurrences, setTimetableOccurrences] = useState<TimetableOccurrences>({});
+  const [timetableOccurrences, setTimetableOccurrences] = useState<TimetableOccurrences>(() => {
+    const saved = localStorage.getItem('timetableOccurrences');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [addedOccurrences, setAddedOccurrences] = useState<{
     [courseId: string]: string | null;
-  }>({});
+  }>(() => {
+    const saved = localStorage.getItem('addedOccurrences');
+    return saved ? JSON.parse(saved) : {};
+  });
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const timetableRef = useRef<HTMLDivElement>(null);
   const [courseColors, setCourseColors] = useState<{[courseId: string]: {bg: string, border: string}}>({});
@@ -435,6 +444,10 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
   const handleReset = () => {
     setTimetableOccurrences({});
     setAddedOccurrences({});
+    setSelectedCourses([]);
+    localStorage.removeItem('timetableOccurrences');
+    localStorage.removeItem('addedOccurrences');
+    localStorage.removeItem('selectedCourses');
   };
   
   const handleSaveAsPng = () => {
@@ -495,6 +508,19 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
     
     setCourseColors(colors);
   }, [availableCourses]);
+
+  // Add useEffect hooks for persistence
+  useEffect(() => {
+    localStorage.setItem('selectedCourses', JSON.stringify(selectedCourses));
+  }, [selectedCourses]);
+
+  useEffect(() => {
+    localStorage.setItem('timetableOccurrences', JSON.stringify(timetableOccurrences));
+  }, [timetableOccurrences]);
+
+  useEffect(() => {
+    localStorage.setItem('addedOccurrences', JSON.stringify(addedOccurrences));
+  }, [addedOccurrences]);
 
   // Add initiateRemoveCourse function
   const initiateRemoveCourse = (course: Course, e: React.MouseEvent) => {

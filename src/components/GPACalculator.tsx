@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUndo } from 'react-icons/fa';
 import DecryptedText from './DecryptedText';
 import { MenuButton } from './MenuButton';
@@ -36,9 +36,10 @@ interface GPACalculatorProps {
 }
 
 export const GPACalculator = ({ setIsExpanded }: GPACalculatorProps) => {
-  const [subjects, setSubjects] = useState<Subject[]>(
-    Array(10).fill({ grade: '', creditHours: '' })
-  );
+  const [subjects, setSubjects] = useState<Subject[]>(() => {
+    const saved = localStorage.getItem('gpaSubjects');
+    return saved ? JSON.parse(saved) : Array(10).fill({ grade: '', creditHours: '' });
+  });
 
   const calculateGPA = () => {
     let totalPoints = 0;
@@ -77,7 +78,13 @@ export const GPACalculator = ({ setIsExpanded }: GPACalculatorProps) => {
 
   const handleReset = () => {
     setSubjects(Array(10).fill({ grade: '', creditHours: '' }));
+    localStorage.removeItem('gpaSubjects');
   };
+
+  // Add useEffect for persistence
+  useEffect(() => {
+    localStorage.setItem('gpaSubjects', JSON.stringify(subjects));
+  }, [subjects]);
 
   const totalCreditHours = subjects.reduce((sum, subject) => {
     return sum + (subject.creditHours ? parseFloat(subject.creditHours) : 0);
