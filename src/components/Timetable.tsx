@@ -489,7 +489,7 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
         const image = canvas.toDataURL('image/png', 1.0);
         const link = document.createElement('a');
         link.href = image;
-        link.download = 'course-timetable.png';
+        link.download = 'timetable.png';
         link.click();
         
         // Clean up
@@ -559,7 +559,7 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
             encryptedClassName="encrypted"
             animateOn="hover"
           />
-          <span className="draft-tag">Beta</span>
+          <span className="draft-tag">Semester 2 2024/2025</span>
         </h1>
         <div className="header-actions">
           <button className="action-button reset-button" onClick={handleReset}>

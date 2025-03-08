@@ -57,6 +57,7 @@
 .title-container {
   display: flex;
   align-items: center;
+  gap: 1rem;
 }
 
 .title-spacer {
@@ -69,12 +70,13 @@
   color: #14b8a6;
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   border: 1px solid rgba(20, 184, 166, 0.2);
   box-shadow: 0 0 10px rgba(20, 184, 166, 0.1);
+  margin-left: 0.75rem;
 }
 
 .timetable-layout {
@@ -468,6 +470,7 @@
   left: 80px;
   z-index: 2;
   min-width: 700px;
+  margin-right: -0.45rem;
 }
 
 .day-header {
@@ -477,6 +480,7 @@
   padding: 0.75rem;
   text-align: center;
   background: #030712;
+  margin-right: 0rem;
 }
 
 .day-header:first-child {
@@ -682,7 +686,7 @@
 
 .detail-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 6px;
   color: #94a3b8;
   font-size: 0.7rem;
@@ -696,26 +700,32 @@
   width: 12px;
   height: 12px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
 }
 
 .detail-text {
   color: #94a3b8;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.2;
   flex: 1;
   min-width: 0;
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;
   overflow: hidden;
-  padding-top: 2px;
+  text-overflow: ellipsis;
+}
+
+/* Remove hover effect */
+.course-block .detail-row:hover .detail-text {
+  position: static;
+  overflow: hidden;
+  background: transparent;
+  z-index: auto;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  border: none;
 }
 
 /* Horizontal scrollbar styles */
