@@ -5,6 +5,12 @@
   display: flex;
 }
 
+/* Light mode styles */
+:root[class~="light-mode"] .app {
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
 .background-squares {
   position: fixed;
   top: 0;
@@ -28,8 +34,37 @@
   transition: margin-left 0.3s ease;
 }
 
+/* Light mode styles for main content */
+:root[class~="light-mode"] .main-content {
+  background-color: #ffffff;
+}
+
 .main-content.sidebar-collapsed {
   margin-left: 0;
+}
+
+/* Theme toggle button styles */
+.theme-toggle-button {
+  background: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-toggle-button:hover {
+  background: rgba(20, 184, 166, 0.15);
+  border-color: rgba(20, 184, 166, 0.3);
+}
+
+:root[class~="light-mode"] .theme-toggle-button {
+  background: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
+}
+
+:root[class~="light-mode"] .theme-toggle-button:hover {
+  background: rgba(20, 184, 166, 0.15);
 }
 
 /* Responsive adjustments */

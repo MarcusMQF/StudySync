@@ -6,6 +6,7 @@ import DecryptedText from './DecryptedText';
 import { loadCoursesFromJson } from '../utils/jsonParser';
 import { Course, CourseOccurrence, TimetableOccurrence as ITimetableOccurrence } from '../types/course';
 import { MenuButton } from './MenuButton';
+import { ModeToggle } from './ModeToggle';
 
 type TimetableOccurrences = {
   [key: string]: ITimetableOccurrence[];
@@ -456,8 +457,8 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
       const wrapper = document.createElement('div');
       wrapper.style.position = 'absolute';
       wrapper.style.left = '-9999px';
-      wrapper.style.width = '2000px'; // Increased width
-      wrapper.style.height = 'auto';
+      wrapper.style.width = '1920px'; // Increased width
+      wrapper.style.height = '1080';
       wrapper.style.backgroundColor = '#030712';
       wrapper.style.padding = '40px';
       wrapper.style.boxSizing = 'border-box';
@@ -568,6 +569,7 @@ export const Timetable = ({ setIsExpanded }: TimetableProps) => {
           <button className="action-button save-button" onClick={handleSaveAsPng}>
             <FaDownload /> Save as PNG
           </button>
+          <ModeToggle />
         </div>
       </div>
       

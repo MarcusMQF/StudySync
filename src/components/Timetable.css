@@ -373,7 +373,7 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 0px;
 }
 
 .occurrence-details .detail-text {
@@ -386,12 +386,8 @@
   white-space: normal;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  padding-top: 2px;
+  display: block;
+  overflow: visible;
 }
 
 /* For the timetable blocks */
@@ -406,10 +402,38 @@
 }
 
 .course-block .detail-text {
+  color: #94a3b8;
   font-size: 0.75rem;
-  line-height: 1.2;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
+  font-weight: 400;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: block;
+  overflow: visible;
+}
+
+.course-block .detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  min-height: 12px;
+}
+
+.course-block .detail-icon {
+  color: #14b8a6;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
 }
 
 /* Hover effect to show full text in course block */
@@ -435,6 +459,7 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
 .grid-wrapper {
@@ -462,7 +487,7 @@
   display: grid;
   grid-template-columns: 80px repeat(5, 1fr);
   gap: 0px;
-  padding-right: 1.4rem;
+  padding-right: 1.2rem;
   margin-bottom: 0.75rem;
   background: #030712;
   position: sticky;
@@ -514,6 +539,7 @@
   box-sizing: border-box;
   transform: translateY(-10px);
   margin-top: 3.6rem;
+  font-weight: 500;
 }
 
 /* Special styling for the first time label (8:00) */
@@ -535,7 +561,7 @@
   border-radius: 8px;
   overflow: hidden;
   background: #030712;
-  border: 1px solid rgba(20, 184, 166, 0.8);
+  border: 1.5px solid rgba(20, 184, 166, 0.8);
   box-sizing: border-box;
   min-width: 620px;
   margin-right: 6px; /* Add margin to prevent border cut-off */
@@ -548,6 +574,7 @@
   box-sizing: border-box;
   min-width: 0;
   width: 100%;
+  border-color: rgba(20, 184, 166, 0.7);
 }
 
 .day-column:last-child {
@@ -583,7 +610,7 @@
 .horizontal-line {
   height: 140px;
   width: 100%;
-  border-bottom: 1px solid rgba(20, 184, 166, 0.5);
+  border-bottom: 1.5px solid rgba(20, 184, 166, 0.5);
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -616,7 +643,7 @@
 .course-block {
   position: absolute;
   background-color: rgba(20, 184, 166, 0.15);
-  border: 1px solid rgba(20, 184, 166, 0.3);
+  border: 0px solid rgba(20, 184, 166, 0.3);
   padding: 8px;
   overflow: hidden;
   display: flex;
@@ -627,7 +654,7 @@
   margin: 0;
   left: 0;
   right: 0;
-  transform: translateY(-1px);
+  transform: translateY(-1.5px);
 }
 
 .course-block-content {
@@ -670,11 +697,16 @@
   font-size: 0.65rem;
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.8);
-  padding: 0.1rem 0.3rem;
+  padding: 0.15rem 0.35rem;
   border-radius: 3px;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: fit-content;
+  height: 18px;
+  line-height: 1;
+  box-sizing: border-box;
 }
 
 .course-details {
@@ -708,12 +740,14 @@
   color: #94a3b8;
   font-size: 0.75rem;
   font-weight: 400;
-  line-height: 1.2;
+  line-height: 1.4;
   flex: 1;
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: block;
+  overflow: visible;
 }
 
 /* Remove hover effect */
@@ -854,6 +888,21 @@
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.3);
   border-color: rgba(255, 255, 255, 0.1);
+  cursor: not-allowed;
+}
+
+/* Light mode disabled button styles */
+:root[class~="light-mode"] .add-occurrence-btn:disabled {
+  background: rgba(203, 213, 225, 0.3);
+  color: #94a3b8;
+  border-color: rgba(203, 213, 225, 0.5);
+  cursor: not-allowed;
+}
+
+:root[class~="light-mode"] .remove-occurrence-btn:disabled {
+  background: rgba(203, 213, 225, 0.3);
+  color: #94a3b8;
+  border-color: rgba(203, 213, 225, 0.5);
   cursor: not-allowed;
 }
 
@@ -1161,8 +1210,16 @@
   border-color: rgba(20, 184, 166, 0.3);
 }
 
-.save-button:active {
-  transform: scale(0.98);
+/* Light mode styles for save button */
+:root[class~="light-mode"] .save-button {
+  background: rgba(11, 199, 183, 0.1);
+  color: #12b6a8;
+  border-color: rgba(0, 228, 209, 0.3);
+}
+
+:root[class~="light-mode"] .save-button:hover {
+  background: rgba(20, 158, 147, 0.15);
+  border-color: rgba(7, 180, 166, 0.4);
 }
 
 /* Subtle icon animation */
@@ -1193,11 +1250,29 @@
   margin: 0;
   background: rgba(20, 184, 166, 0.15);
   color: #14b8a6;
-  padding: 0.1rem 0.3rem;
+  padding: 0.15rem 0.35rem;
   border-radius: 3px;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: fit-content;
+  height: 18px;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+/* Light mode styles for course blocks */
+:root[class~="light-mode"] .course-block .occ-tag {
+  background: rgba(15, 118, 110, 0.15);
+  color: #0f766e;
+  font-weight: 600;
+}
+
+:root[class~="light-mode"] .course-block .activity-type {
+  background: rgba(15, 118, 110, 0.15);
+  color: #0f766e;
+  font-weight: 600;
 }
 
 /* Keep the original activity tag styling for the course panel */
@@ -1541,4 +1616,223 @@
 .timetable-grid-wrapper {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Light mode styles for timetable */
+:root[class~="light-mode"] .timetable-container {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .timetable-grid {
+  background: #ffffff;
+  border-color: rgba(20, 184, 166, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+:root[class~="light-mode"] .grid-content {
+  background: #ffffff;
+  border-color: rgba(20, 184, 166, 0.8);
+}
+
+:root[class~="light-mode"] .day-header {
+  color: #1f2937;
+  background: #ffffff;
+}
+
+:root[class~="light-mode"] .time-label {
+  color: rgba(31, 41, 55, 0.8);
+  font-weight: 500;
+}
+
+:root[class~="light-mode"] .time-column {
+  background: #ffffff;
+}
+
+:root[class~="light-mode"] .course-item {
+  background: #f8fafc;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  box-shadow: none;
+}
+
+:root[class~="light-mode"] .course-item:hover {
+  background: rgba(20, 184, 166, 0.05);
+  border-color: rgba(20, 184, 166, 0.4);
+}
+
+:root[class~="light-mode"] .course-header h3 {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .search-bar {
+  background: #f8fafc;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+}
+
+:root[class~="light-mode"] .search-icon {
+  color: black;
+}
+
+:root[class~="light-mode"] .search-bar input {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .search-bar input::placeholder {
+  color: rgba(31, 41, 55, 0.5);
+}
+
+:root[class~="light-mode"] .search-results {
+  background: #ffffff;
+  border-color: rgba(20, 184, 166, 0.1);
+}
+
+:root[class~="light-mode"] .search-result-item:hover {
+  background: rgba(20, 184, 166, 0.08);
+}
+
+:root[class~="light-mode"] .course-panel {
+  background: #ffffff;
+  border-color: rgba(20, 184, 166, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+:root[class~="light-mode"] .course-block .detail-text {
+  color: #64748b;
+}
+
+:root[class~="light-mode"] .course-block .detail-icon {
+  color: #14b8a6;
+}
+
+:root[class~="light-mode"] .expand-icon {
+  color: black;
+}
+
+:root[class~="light-mode"] .horizontal-line {
+  border-color: rgba(20, 184, 166, 0.7);
+  border-bottom-width: 1.5px;
+}
+
+:root[class~="light-mode"] .day-column {
+  border-color: rgba(20, 184, 166, 0.7);
+}
+
+/* Light mode styles for course blocks */
+:root[class~="light-mode"] .course-block .course-code {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+:root[class~="light-mode"] .course-block .course-name {
+  color: rgba(0, 117, 104, 0.5);
+  font-weight: 600;
+}
+
+:root[class~="light-mode"] .course-block .occ-tag {
+  background: rgba(15, 118, 110, 0.15);
+  color: #0f766e;
+  font-weight: 600;
+}
+
+:root[class~="light-mode"] .course-block .activity-type {
+  background: rgba(15, 118, 110, 0.15);
+  color: #0f766e;
+  font-weight: 600;
+}
+
+:root[class~="light-mode"] .course-block .detail-row {
+  color: #374151;
+}
+
+:root[class~="light-mode"] .course-block .detail-icon {
+  color: #475569;
+}
+
+:root[class~="light-mode"] .course-block .detail-text {
+  color: #374151;
+}
+
+:root[class~="light-mode"] .occurrence-item {
+  background: #ffffff;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+}
+
+:root[class~="light-mode"] .occurrence-session {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+:root[class~="light-mode"] .occurrence-time {
+  color: #1f2937;
+}
+
+:root[class~="light-mode"] .occurrence-time svg {
+  color: #475569;
+}
+
+:root[class~="light-mode"] .activity-type {
+  background: rgba(20, 184, 166, 0.1);
+  color: #0f766e;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+}
+
+:root[class~="light-mode"] .occurrence-details .detail-row {
+  color: #475569;
+}
+
+:root[class~="light-mode"] .occurrence-details .detail-row svg {
+  color: #64748b;
+}
+
+:root[class~="light-mode"] .occurrence-details .detail-text {
+  color: #475569;
+}
+
+:root[class~="light-mode"] .occurrence-number span {
+  background: rgba(20, 184, 166, 0.1);
+  color: #0f766e;
+  border-color: rgba(20, 184, 166, 0.2);
+}
+
+:root[class~="light-mode"] .occurrence-number .activity-type {
+  background: rgba(20, 184, 166, 0.1);
+  color: #0f766e;
+  border-color: rgba(20, 184, 166, 0.2);
+}
+
+:root[class~="light-mode"] .incomplete-details {
+  color: #6b7280;
+}
+
+/* Light mode styles for day headers */
+:root[class~="light-mode"] .days-header {
+  background: #ffffff;
+}
+
+:root[class~="light-mode"] .day-header {
+  background: #ffffff;
+  color: #1f2937;
+}
+
+/* Light mode styles for time labels and grid lines */
+:root[class~="light-mode"] .time-label {
+  color: rgba(31, 41, 55, 0.8);
+  font-weight: 500;
+}
+
+:root[class~="light-mode"] .horizontal-line {
+  border-color: rgba(20, 184, 166, 0.7);
+  border-bottom-width: 1.5px;
+}
+
+:root[class~="light-mode"] .day-column {
+  border-right: 1.5px solid rgba(20, 184, 166, 0.7);
+}
+
+:root[class~="light-mode"] .grid-content {
+  background: #ffffff;
+  border: 1.5px solid rgba(20, 184, 166, 0.8);
+}
+
+/* Ensure the last column doesn't have a right border */
+:root[class~="light-mode"] .day-column:last-child {
+  border-right: none;
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaUndo } from 'react-icons/fa';
 import DecryptedText from './DecryptedText';
 import { MenuButton } from './MenuButton';
+import { ModeToggle } from './ModeToggle';
 import './GPACalculator.css';
 
 interface GradePoint {
@@ -116,9 +117,12 @@ export const GPACalculator = ({ setIsExpanded }: GPACalculatorProps) => {
             />
           </h1>
         </div>
-        <button className="action-button reset-button" onClick={handleReset}>
-          <FaUndo /> Reset
-        </button>
+        <div className="header-actions">
+          <button className="action-button reset-button" onClick={handleReset}>
+            <FaUndo /> Reset
+          </button>
+          <ModeToggle />
+        </div>
       </div>
 
       <div className="gpa-layout">
