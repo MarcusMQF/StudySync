@@ -8,6 +8,8 @@
   [![Vite][vite-badge]][vite-url]
   [![Last Commit][commit-badge]][repo-url]
   [![License][license-badge]][license-url]
+
+  <h3><a href="https://study-sync-murex-rho.vercel.app/">Getting Started →</a></h3>
 </div>
 
 [react-badge]: https://img.shields.io/badge/React-19-blue.svg "React version"
