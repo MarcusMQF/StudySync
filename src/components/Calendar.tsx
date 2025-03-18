@@ -53,7 +53,7 @@ export const Calendar = ({ selected, onSelect }: CalendarProps) => {
         </button>
       </div>
       <div className="calendar-grid">
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div key={day} className="calendar-day-header">{day}</div>
         ))}
         {prevMonthDays.map((day) => (
